@@ -163,6 +163,197 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-git-flow" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/09/11/git-flow/">git-flow流程</a>
+    </h1>
+  
+
+        
+        <a href="/2018/09/11/git-flow/" class="archive-article-date">
+  	<time datetime="2018-09-11T08:23:28.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-09-11</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="1-Git-flow-工作流程"><a href="#1-Git-flow-工作流程" class="headerlink" title="1. Git flow 工作流程"></a>1. Git flow 工作流程</h1><p>Git Flow 工作流一共包含五种分支：</p>
+<p> <img src="/images/1536650899483.png" alt="1536650899483"></p>
+<h2 id="1-1-两个长期分支："><a href="#1-1-两个长期分支：" class="headerlink" title="1.1. 两个长期分支："></a>1.1. 两个长期分支：</h2><p><strong>1.1.1. 主分支 master：</strong>主分支，产品的功能全部实现后，最终在master分支对外发布。</p>
+<p><strong>1.1.2. 开发分支 develop：</strong>开发分支，基于master分支克隆，产品的编码工作在此分支进行。</p>
+<p>​    创建Develop分支的命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b develop master</span><br></pre></td></tr></table></figure>
+<p>​    将Develop分支发布到Master分支的命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#切换到Master分支</span></span><br><span class="line">git checkout master</span><br><span class="line"><span class="comment"># 对Develop分支进行合并</span></span><br><span class="line">git merge --no-ff develop</span><br></pre></td></tr></table></figure>
+<h2 id="1-2-三个临时性分支："><a href="#1-2-三个临时性分支：" class="headerlink" title="1.2. 三个临时性分支："></a>1.2. 三个临时性分支：</h2><p><strong>1.2.1. 功能（feature）分支：</strong>新功能分支，一般一个新功能对应一个分支，功能分支的名字，可以采用 feature-* 的形式命名。</p>
+<p>​    创建一个功能分支：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b feature-x develop</span><br></pre></td></tr></table></figure>
+<p>​    开发完成后，将功能分支合并到 develop 分支：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git checkout develop</span><br><span class="line">git merge --no-ff feature-x</span><br></pre></td></tr></table></figure>
+<p>​    删除 feature 分支：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch -d feature-x</span><br></pre></td></tr></table></figure>
+<p><strong>1.2.2. 预发布（release）分支：</strong>发布分支是从 Develop 分支上面分出来的，用于发布测试版本，测试完后最终需要合并进 Develop 和 Master 分支。它的命名，可以采用release-*的形式。</p>
+<p>​    创建一个预发布分支：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b release-1.2 develop</span><br></pre></td></tr></table></figure>
+<p>​    确认没有问题后，合并到 master 分支：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git checkout master</span><br><span class="line">git merge --no-ff release-1.2</span><br><span class="line">git tag -a 1.2 <span class="comment"># （ 对合并生成的新节点，做一个标签 ）</span></span><br></pre></td></tr></table></figure>
+<p>​    再合并到 develop 分支：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git checkout develop  </span><br><span class="line">git merge --no-ff release-1.2</span><br></pre></td></tr></table></figure>
+<p>​    最后，删除预发布分支：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch -d release-1.2</span><br></pre></td></tr></table></figure>
+<p><strong>1.2.3. 修补bug（fixbug）分支：</strong>用于修复线上版本出现的 Bug 时创建的，基于 Master 分支创建。修补结束以后，再合并进 Master 和 Develop 分支。它的命名，可以采用 fixbug-* 的形式。</p>
+<p>​    创建一个修补 bug 分支：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b fixbug-0.1 master</span><br></pre></td></tr></table></figure>
+<p>​    修补结束后，合并到 master 分支：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git checkout master   </span><br><span class="line">git merge --no-ff fixbug-0.1  </span><br><span class="line">git tag -a 0.1.1</span><br></pre></td></tr></table></figure>
+<p>​    再合并到 develop 分支：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git checkout develop  </span><br><span class="line">git merge --no-ff fixbug-0.1</span><br></pre></td></tr></table></figure>
+<p>​    最后，删除”修补 bug 分支”：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch -d fixbug-0.1</span><br></pre></td></tr></table></figure>
+<h1 id="2-Git-flow-用法"><a href="#2-Git-flow-用法" class="headerlink" title="2. Git flow 用法"></a>2. Git flow 用法</h1><h2 id="2-1-安装"><a href="#2-1-安装" class="headerlink" title="2.1. 安装"></a>2.1. 安装</h2><p>​    MAC OS</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install git-flow-avh</span><br></pre></td></tr></table></figure>
+<p>​    Linux</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install git-flow</span><br></pre></td></tr></table></figure>
+<h2 id="2-2-初始化"><a href="#2-2-初始化" class="headerlink" title="2.2. 初始化"></a>2.2. 初始化</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow init</span><br></pre></td></tr></table></figure>
+<p>这会创建上述5个分支，你必须回答几个关于分支的命名约定的问题。 建议使用默认值。</p>
+<h2 id="2-3-开发新特性"><a href="#2-3-开发新特性" class="headerlink" title="2.3. 开发新特性"></a>2.3. 开发新特性</h2><p>新特性的开发是在feature分支下完成的</p>
+<p>​    2.3.1. 基于develop分支创建新的分支feature/MYFEATURE分支。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git flow feature start MYFEATURE</span><br><span class="line"><span class="comment"># 创建并进入feature/MYFEATURE分支</span></span><br></pre></td></tr></table></figure>
+<p>​    2.3.2. 发布新特性</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git flow feature publish MYFEATURE</span><br><span class="line"><span class="comment"># 将新的特性推送到develop分支</span></span><br></pre></td></tr></table></figure>
+<p>​    2.3.3. 完成新特性</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git flow feature finish MYFEATURE</span><br><span class="line"><span class="comment"># 将会自动如下三部</span></span><br><span class="line"><span class="comment"># 合并 MYFEATURE 分支到 'develop'</span></span><br><span class="line"><span class="comment"># 删除这个新特性分支</span></span><br><span class="line"><span class="comment"># 切换回 'develop' 分支</span></span><br></pre></td></tr></table></figure>
+<h2 id="2-4-发布release版本"><a href="#2-4-发布release版本" class="headerlink" title="2.4. 发布release版本"></a>2.4. 发布release版本</h2><p>基于develop分支创建，完成后自动打tag、推送到master分支、推送回develop分支 </p>
+<pre><code>2.4.1. 基于develop分支在release分支之下创建新分支release/RELEASE
+</code></pre><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git flow release start RELEASE </span><br><span class="line"><span class="comment"># 创建并进入release/RELEASE分支</span></span><br></pre></td></tr></table></figure>
+<p>​    2.4.2. 完成 release 版本</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git flow release finish RELEASE</span><br><span class="line"><span class="comment"># 归并 release 分支到 'master' 分支</span></span><br><span class="line"><span class="comment"># 用 release 分支名打 Tag</span></span><br><span class="line"><span class="comment"># 归并 release 分支到 'develop'</span></span><br><span class="line"><span class="comment"># 移除 release 分支</span></span><br></pre></td></tr></table></figure>
+<h2 id="2-5-紧急修复"><a href="#2-5-紧急修复" class="headerlink" title="2.5. 紧急修复"></a>2.5. 紧急修复</h2><ul>
+<li><p>急修复来自这样的需求：生产环境的版本处于一个不预期状态，需要立即修正。</p>
+</li>
+<li><p>有可能是需要修正 master 分支上某个 TAG 标记的生产版本。</p>
+</li>
+<li><p>基于master分支创建，完成后自动打tag、推送回master分支、推送到develop分支 </p>
+<p>2.5.1. 基于master分支在hotfix分支之下创建新分支hotfix/VERSION</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git flow hotfix start VERSION [BASENAME]</span><br><span class="line"><span class="comment"># [BASENAME]为finish release时填写的版本号</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>​    2.5.2. 完成紧急修复</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git flow hotfix finish VERSION</span><br><span class="line"><span class="comment"># 归并 hotfix 分支到 'master' 分支</span></span><br><span class="line"><span class="comment"># 用 hotfix 分支名打 Tag</span></span><br><span class="line"><span class="comment"># 归并 hotfix 分支到 'develop'</span></span><br><span class="line"><span class="comment"># 移除 hotfix 分支</span></span><br></pre></td></tr></table></figure>
+<h1 id="3-Git-flow-命令"><a href="#3-Git-flow-命令" class="headerlink" title="3. Git flow 命令"></a>3. Git flow 命令</h1><table>
+<thead>
+<tr>
+<th>第一段（命令）</th>
+<th style="text-align:center">第二段（分支）</th>
+<th>第三段（操作）</th>
+<th>第四段（名字）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>git flow</td>
+<td style="text-align:center">init</td>
+<td>start</td>
+<td>NAME</td>
+</tr>
+<tr>
+<td></td>
+<td style="text-align:center">feature</td>
+<td>finish</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td style="text-align:center">release</td>
+<td>publish</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td style="text-align:center">hotfix</td>
+<td>pull</td>
+</tr>
+</tbody>
+</table>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script> 
+
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+                    <a href="/tags/linux/" class="article-tag-list-link color1">linux</a>
+        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a> -->
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+                    <a href="/tags/git/" class="article-tag-list-link color4">git</a>
+        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">git</a> -->
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/git/" class="article-tag-list-link color4">git</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/09/11/git-flow/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-elasticsearch实现ldap用户对接" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     

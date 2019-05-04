@@ -2,14 +2,14 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://blog.fanfengqiang.com/2019/01/26/kubernetes-HA-master%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/</loc>
+    <loc>https://blog.fanfengqiang.com/2019/05/04/%E5%9C%A8kubernetes%E4%B8%AD%E9%83%A8%E7%BD%B2Jenkins-CICD%E5%B7%A5%E5%85%B7%E5%B9%B6%E8%AE%BE%E7%BD%AE%E5%8A%A8%E6%80%81%E5%88%9B%E5%BB%BAJenkins-slave/</loc>
     
-    <lastmod>2019-05-03T16:12:08.000Z</lastmod>
+    <lastmod>2019-05-04T10:57:09.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://blog.fanfengqiang.com/2018/08/27/elasticsearch%E5%AE%9E%E7%8E%B0ldap%E7%94%A8%E6%88%B7%E5%AF%B9%E6%8E%A5/</loc>
+    <loc>https://blog.fanfengqiang.com/2019/01/26/kubernetes-HA-master%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
     
@@ -37,6 +37,13 @@
   </url>
   
   <url>
+    <loc>https://blog.fanfengqiang.com/2018/08/27/elasticsearch%E5%AE%9E%E7%8E%B0ldap%E7%94%A8%E6%88%B7%E5%AF%B9%E6%8E%A5/</loc>
+    
+    <lastmod>2019-05-03T16:12:08.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://blog.fanfengqiang.com/2019/03/17/%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91kubernetes-dashboard/</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
@@ -58,13 +65,6 @@
   </url>
   
   <url>
-    <loc>https://blog.fanfengqiang.com/2019/01/25/kubernetes%E7%AE%80%E5%8D%95%E5%AE%89%E8%A3%85/</loc>
-    
-    <lastmod>2019-05-03T16:12:08.000Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://blog.fanfengqiang.com/2018/09/11/git-flow/</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
@@ -73,6 +73,13 @@
   
   <url>
     <loc>https://blog.fanfengqiang.com/2019/03/11/kubernetes-TLS-Bootstrapping%E9%85%8D%E7%BD%AE/</loc>
+    
+    <lastmod>2019-05-03T16:12:08.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://blog.fanfengqiang.com/2019/01/25/kubernetes%E7%AE%80%E5%8D%95%E5%AE%89%E8%A3%85/</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
     
@@ -100,14 +107,14 @@
   </url>
   
   <url>
-    <loc>https://blog.fanfengqiang.com/categories/index.html</loc>
+    <loc>https://blog.fanfengqiang.com/archives/index.html</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://blog.fanfengqiang.com/archives/index.html</loc>
+    <loc>https://blog.fanfengqiang.com/categories/index.html</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
     

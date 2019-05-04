@@ -163,6 +163,119 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-在kubernetes中部署Jenkins-CICD工具并设置动态创建Jenkins-slave" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/05/04/在kubernetes中部署Jenkins-CICD工具并设置动态创建Jenkins-slave/">在kubernetes中部署Jenkins CICD工具并设置动态创建Jenkins slave</a>
+    </h1>
+  
+
+        
+        <a href="/2019/05/04/在kubernetes中部署Jenkins-CICD工具并设置动态创建Jenkins-slave/" class="archive-article-date">
+  	<time datetime="2019-05-04T10:56:11.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-05-04</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="1-安装Jenkins"><a href="#1-安装Jenkins" class="headerlink" title="1. 安装Jenkins"></a>1. 安装Jenkins</h1><h2 id="1-1-编写manifests配置清单"><a href="#1-1-编写manifests配置清单" class="headerlink" title="1.1. 编写manifests配置清单"></a>1.1. 编写manifests配置清单</h2><h3 id="1-1-1-创建名称空间"><a href="#1-1-1-创建名称空间" class="headerlink" title="1.1.1. 创建名称空间"></a>1.1.1. 创建名称空间</h3><p>我们创建一个名字叫jenkins的名称空间，后面所有的资源都放在这个名称空间下，方便管理。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># jenkins-ns.yaml </span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Namespace</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">jenkins</span></span><br></pre></td></tr></table></figure>
+<h3 id="1-1-2-创建PV-PVC"><a href="#1-1-2-创建PV-PVC" class="headerlink" title="1.1.2. 创建PV/PVC"></a>1.1.2. 创建PV/PVC</h3><p>因为我们要把设置的配置、安装的插件持久化下来，顾创建持久化存储卷，因我集群中有storageClass，顾创建PVC会为我动态生成PV。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># jenkins-pvc.yaml </span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">PersistentVolumeClaim</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">jenkins-pvc</span></span><br><span class="line"><span class="attr">  namespace:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  accessModes:</span></span><br><span class="line"><span class="bullet">    -</span> <span class="string">ReadWriteMany</span></span><br><span class="line"><span class="attr">  resources:</span></span><br><span class="line"><span class="attr">    requests:</span></span><br><span class="line"><span class="attr">      storage:</span> <span class="number">20</span><span class="string">Gi</span></span><br><span class="line"><span class="attr">  storageClassName:</span> <span class="string">ceph</span></span><br><span class="line"><span class="attr">  volumeMode:</span> <span class="string">Filesystem</span></span><br></pre></td></tr></table></figure>
+<h3 id="1-1-3-创建RBAC"><a href="#1-1-3-创建RBAC" class="headerlink" title="1.1.3. 创建RBAC"></a>1.1.3. 创建RBAC</h3><p>因为我们要用jenkins动态创建jenkins slave POD，顾我们要赋予jenkins相应的权限来访问api server。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># jenkins-rbac.yaml </span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ServiceAccount</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">jenkins</span>          <span class="comment"># 在jenkins名称空间下创建名字叫jenkins的SA</span></span><br><span class="line"><span class="attr">  namespace:</span> <span class="string">jenkins</span></span><br><span class="line"></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ClusterRole</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">rbac.authorization.k8s.io/v1beta1</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">jenkins</span>         <span class="comment"># 创建名字叫jenkins的ClusterRole</span></span><br><span class="line"><span class="attr">rules:</span></span><br><span class="line"><span class="attr">  - apiGroups:</span> <span class="string">["extensions",</span> <span class="string">"apps"</span><span class="string">]</span></span><br><span class="line"><span class="attr">    resources:</span> <span class="string">["deployments"]</span></span><br><span class="line"><span class="attr">    verbs:</span> <span class="string">["create",</span> <span class="string">"delete"</span><span class="string">,</span> <span class="string">"get"</span><span class="string">,</span> <span class="string">"list"</span><span class="string">,</span> <span class="string">"watch"</span><span class="string">,</span> <span class="string">"patch"</span><span class="string">,</span> <span class="string">"update"</span><span class="string">]</span></span><br><span class="line"><span class="attr">  - apiGroups:</span> <span class="string">[""]</span></span><br><span class="line"><span class="attr">    resources:</span> <span class="string">["services","pods","pods/exec","pods/log","secrets"]</span></span><br><span class="line"><span class="attr">    verbs:</span> <span class="string">["*"]</span></span><br><span class="line"></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">rbac.authorization.k8s.io/v1beta1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ClusterRoleBinding</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">roleRef:</span></span><br><span class="line"><span class="attr">  apiGroup:</span> <span class="string">rbac.authorization.k8s.io</span></span><br><span class="line"><span class="attr">  kind:</span> <span class="string">ClusterRole</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">subjects:</span></span><br><span class="line"><span class="attr">  - kind:</span> <span class="string">ServiceAccount</span></span><br><span class="line"><span class="attr">    name:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">    namespace:</span> <span class="string">jenkins</span></span><br></pre></td></tr></table></figure>
+<h3 id="1-1-4-创建deployment"><a href="#1-1-4-创建deployment" class="headerlink" title="1.1.4. 创建deployment"></a>1.1.4. 创建deployment</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># jenkins-deploy.yaml</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">extensions/v1beta1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Deployment</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">  namespace:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  template:</span></span><br><span class="line"><span class="attr">    metadata:</span></span><br><span class="line"><span class="attr">      labels:</span></span><br><span class="line"><span class="attr">        app:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">    spec:</span></span><br><span class="line"><span class="attr">      terminationGracePeriodSeconds:</span> <span class="number">10</span></span><br><span class="line"><span class="attr">      serviceAccountName:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">      containers:</span></span><br><span class="line"><span class="attr">      - name:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">        image:</span> <span class="string">jenkins/jenkins:lts</span></span><br><span class="line"><span class="attr">        imagePullPolicy:</span> <span class="string">IfNotPresent</span></span><br><span class="line"><span class="attr">        ports:</span></span><br><span class="line"><span class="attr">        - containerPort:</span> <span class="number">8080</span></span><br><span class="line"><span class="attr">          name:</span> <span class="string">web</span></span><br><span class="line"><span class="attr">          protocol:</span> <span class="string">TCP</span></span><br><span class="line"><span class="attr">        - containerPort:</span> <span class="number">50000</span></span><br><span class="line"><span class="attr">          name:</span> <span class="string">agent</span></span><br><span class="line"><span class="attr">          protocol:</span> <span class="string">TCP</span></span><br><span class="line"><span class="attr">        resources:</span></span><br><span class="line"><span class="attr">          limits:</span></span><br><span class="line"><span class="attr">            cpu:</span> <span class="number">1000</span><span class="string">m</span></span><br><span class="line"><span class="attr">            memory:</span> <span class="number">1</span><span class="string">Gi</span></span><br><span class="line"><span class="comment">#          requests:</span></span><br><span class="line"><span class="comment">#            cpu: 500m</span></span><br><span class="line"><span class="comment">#            memory: 512Mi</span></span><br><span class="line"><span class="attr">        livenessProbe:</span></span><br><span class="line"><span class="attr">          httpGet:</span></span><br><span class="line"><span class="attr">            path:</span> <span class="string">/login</span></span><br><span class="line"><span class="attr">            port:</span> <span class="number">8080</span></span><br><span class="line"><span class="attr">          initialDelaySeconds:</span> <span class="number">60</span></span><br><span class="line"><span class="attr">          timeoutSeconds:</span> <span class="number">5</span></span><br><span class="line"><span class="attr">          failureThreshold:</span> <span class="number">12</span> <span class="comment"># ~2 minutes</span></span><br><span class="line"><span class="attr">        readinessProbe:</span></span><br><span class="line"><span class="attr">          httpGet:</span></span><br><span class="line"><span class="attr">            path:</span> <span class="string">/login</span></span><br><span class="line"><span class="attr">            port:</span> <span class="number">8080</span></span><br><span class="line"><span class="attr">          initialDelaySeconds:</span> <span class="number">60</span></span><br><span class="line"><span class="attr">          timeoutSeconds:</span> <span class="number">5</span></span><br><span class="line"><span class="attr">          failureThreshold:</span> <span class="number">12</span> <span class="comment"># ~2 minutes</span></span><br><span class="line"><span class="attr">        volumeMounts:</span></span><br><span class="line"><span class="attr">        - name:</span> <span class="string">jenkinshome</span></span><br><span class="line"><span class="attr">          subPath:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">          mountPath:</span> <span class="string">/var/jenkins_home</span></span><br><span class="line"><span class="attr">        env:</span></span><br><span class="line"><span class="attr">        - name:</span> <span class="string">LIMITS_MEMORY</span></span><br><span class="line"><span class="attr">          valueFrom:</span></span><br><span class="line"><span class="attr">            resourceFieldRef:</span></span><br><span class="line"><span class="attr">              resource:</span> <span class="string">limits.memory</span></span><br><span class="line"><span class="attr">              divisor:</span> <span class="number">1</span><span class="string">Mi</span></span><br><span class="line"><span class="attr">        - name:</span> <span class="string">JAVA_OPTS</span></span><br><span class="line"><span class="attr">          value:</span> <span class="bullet">-Xmx$(LIMITS_MEMORY)m</span> <span class="attr">-XshowSettings:vm</span> <span class="bullet">-Dhudson.slaves.NodeProvisioner.initialDelay=0</span> <span class="bullet">-Dhudson.slaves.NodeProvisioner.MARGIN=50</span> <span class="bullet">-Dhudson.slaves.NodeProvisioner.MARGIN0=0.85</span> <span class="bullet">-Duser.timezone=Asia/Shanghai</span></span><br><span class="line"><span class="attr">      securityContext:</span></span><br><span class="line"><span class="attr">        fsGroup:</span> <span class="number">1000</span></span><br><span class="line"><span class="attr">      volumes:</span></span><br><span class="line"><span class="attr">      - name:</span> <span class="string">jenkinshome</span></span><br><span class="line"><span class="attr">        persistentVolumeClaim:</span></span><br><span class="line"><span class="attr">          claimName:</span> <span class="string">jenkins-pvc</span></span><br></pre></td></tr></table></figure>
+<h3 id="1-1-5-创建service"><a href="#1-1-5-创建service" class="headerlink" title="1.1.5. 创建service"></a>1.1.5. 创建service</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># jenkins-svc.yaml</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">  namespace:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">  labels:</span></span><br><span class="line"><span class="attr">    app:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  selector:</span></span><br><span class="line"><span class="attr">    app:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">  ports:</span></span><br><span class="line"><span class="attr">  - name:</span> <span class="string">web</span></span><br><span class="line"><span class="attr">    port:</span> <span class="number">8080</span></span><br><span class="line"><span class="attr">    targetPort:</span> <span class="number">8080</span></span><br><span class="line"><span class="attr">  - name:</span> <span class="string">agent</span></span><br><span class="line"><span class="attr">    port:</span> <span class="number">50000</span></span><br><span class="line"><span class="attr">    targetPort:</span> <span class="number">50000</span></span><br></pre></td></tr></table></figure>
+<h3 id="1-1-6-创建ingress"><a href="#1-1-6-创建ingress" class="headerlink" title="1.1.6. 创建ingress"></a>1.1.6. 创建ingress</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># jenkins-ingress.yaml</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">extensions/v1beta1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Ingress</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">  namespace:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  rules:</span></span><br><span class="line"><span class="attr">  - host:</span> <span class="string">jenkins.5ik8s.com</span></span><br><span class="line"><span class="attr">    http:</span></span><br><span class="line"><span class="attr">      paths:</span></span><br><span class="line"><span class="attr">      - path:</span> <span class="string">/</span></span><br><span class="line"><span class="attr">        backend:</span></span><br><span class="line"><span class="attr">          serviceName:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">          servicePort:</span> <span class="number">8080</span></span><br></pre></td></tr></table></figure>
+<h2 id="1-2-应用配置"><a href="#1-2-应用配置" class="headerlink" title="1.2. 应用配置"></a>1.2. 应用配置</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f jenkins-ns.yaml</span><br><span class="line">kubectl apply -f jenkins-rbac.yaml</span><br><span class="line">kubectl apply -f jenkins-pvc.yaml</span><br><span class="line">kubectl apply -f jenkins-deploy.yaml</span><br><span class="line">kubectl apply -f jenkins-svc.yaml</span><br><span class="line">kubectl apply -f jenkins-ingress.yaml</span><br></pre></td></tr></table></figure>
+<h2 id="1-3-初始化"><a href="#1-3-初始化" class="headerlink" title="1.3. 初始化"></a>1.3. 初始化</h2><p><img src="/images/jenkins-init1.png" alt></p>
+<p><img src="/images/jenkins-init2.png" alt></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl <span class="built_in">exec</span> -it -n jenkins jenkins-5dfc7749fb-tc59p -- cat /var/jenkins_home/secrets/initialAdminPassword</span><br></pre></td></tr></table></figure>
+<h3 id="1-3-1-安装推荐插件"><a href="#1-3-1-安装推荐插件" class="headerlink" title="1.3.1. 安装推荐插件"></a>1.3.1. 安装推荐插件</h3><p><img src="/images/jenkins-init3.png" alt></p>
+<h3 id="1-3-2-设置管理员密码"><a href="#1-3-2-设置管理员密码" class="headerlink" title="1.3.2. 设置管理员密码"></a>1.3.2. 设置管理员密码</h3><p><img src="/images/jenkins-init4.png" alt></p>
+<h1 id="2-配置jenkins"><a href="#2-配置jenkins" class="headerlink" title="2. 配置jenkins"></a>2. 配置jenkins</h1><h2 id="2-1-安装必要插件"><a href="#2-1-安装必要插件" class="headerlink" title="2.1. 安装必要插件"></a>2.1. 安装必要插件</h2><p><img src="/images/jenkins-install-plugin-1.png" alt></p>
+<p><img src="/images/jenkins-install-plugin-2.png" alt></p>
+<p><img src="/images/jenkins-install-plugins-3.png" alt></p>
+<h2 id="2-2-配置插件"><a href="#2-2-配置插件" class="headerlink" title="2.2. 配置插件"></a>2.2. 配置插件</h2><h3 id="2-2-1-重启jenkins"><a href="#2-2-1-重启jenkins" class="headerlink" title="2.2.1. 重启jenkins"></a>2.2.1. 重启jenkins</h3><h3 id="2-2-2-配置kubernetes启动jenkins-slave的Pod模板"><a href="#2-2-2-配置kubernetes启动jenkins-slave的Pod模板" class="headerlink" title="2.2.2. 配置kubernetes启动jenkins slave的Pod模板"></a>2.2.2. 配置kubernetes启动jenkins slave的Pod模板</h3><p><img src="/images/jenkins-setup.png" alt></p>
+<p><img src="/images/jenkins-setup2.png" alt></p>
+<p><img src="/images/jenkins-setup3-1.png" alt></p>
+<p><img src="/images/jenkins-setup4.png" alt></p>
+<p><img src="/images/jenkins-setup5.png" alt></p>
+<p><img src="/images/jenkins-setup6.png" alt></p>
+<p>本文中用到的Docker镜像地址：<a href="https://github.com/fanfengqiang/jenkins_slave" target="_blank" rel="noopener">fanfengqiang/jenkins_slave</a></p>
+<h1 id="3-测试"><a href="#3-测试" class="headerlink" title="3. 测试"></a>3. 测试</h1><h2 id="3-1-创建项目"><a href="#3-1-创建项目" class="headerlink" title="3.1. 创建项目"></a>3.1. 创建项目</h2><p><img src="/images/jenkins-test1.png" alt></p>
+<h2 id="3-2-配置项目"><a href="#3-2-配置项目" class="headerlink" title="3.2. 配置项目"></a>3.2. 配置项目</h2><p><img src="/images/jenkins-test2.png" alt></p>
+<p><img src="/images/jenkins-test3.png" alt></p>
+<h2 id="3-3-触发任务"><a href="#3-3-触发任务" class="headerlink" title="3.3. 触发任务"></a>3.3. 触发任务</h2><h2 id="3-4-查看结果"><a href="#3-4-查看结果" class="headerlink" title="3.4. 查看结果"></a>3.4. 查看结果</h2><p><img src="/images/jenkins-test4.png" alt></p>
+<p><img src="/images/jenkins-test5.png" alt></p>
+<p>从上图可以看出当用任务需要在jenkins slave上执行时k8s会自动创建相应Pods</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script> 
+
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+                    <a href="/tags/jenkins/" class="article-tag-list-link color3">jenkins</a>
+        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">jenkins</a> -->
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
+        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/05/04/在kubernetes中部署Jenkins-CICD工具并设置动态创建Jenkins-slave/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-分享一张linux监控分析工具汇总图" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1448,197 +1561,6 @@
       
         <p class="article-more-link">
           <a class="article-more-a" href="/2018/12/26/glusterfs作为kubernetes后端storageclass/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-git-flow" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/09/11/git-flow/">git-flow流程</a>
-    </h1>
-  
-
-        
-        <a href="/2018/09/11/git-flow/" class="archive-article-date">
-  	<time datetime="2018-09-11T08:23:28.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-09-11</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="1-Git-flow-工作流程"><a href="#1-Git-flow-工作流程" class="headerlink" title="1. Git flow 工作流程"></a>1. Git flow 工作流程</h1><p>Git Flow 工作流一共包含五种分支：</p>
-<p> <img src="/images/1536650899483.png" alt="1536650899483"></p>
-<h2 id="1-1-两个长期分支："><a href="#1-1-两个长期分支：" class="headerlink" title="1.1. 两个长期分支："></a>1.1. 两个长期分支：</h2><p><strong>1.1.1. 主分支 master：</strong>主分支，产品的功能全部实现后，最终在master分支对外发布。</p>
-<p><strong>1.1.2. 开发分支 develop：</strong>开发分支，基于master分支克隆，产品的编码工作在此分支进行。</p>
-<p>​    创建Develop分支的命令：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b develop master</span><br></pre></td></tr></table></figure>
-<p>​    将Develop分支发布到Master分支的命令：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#切换到Master分支</span></span><br><span class="line">git checkout master</span><br><span class="line"><span class="comment"># 对Develop分支进行合并</span></span><br><span class="line">git merge --no-ff develop</span><br></pre></td></tr></table></figure>
-<h2 id="1-2-三个临时性分支："><a href="#1-2-三个临时性分支：" class="headerlink" title="1.2. 三个临时性分支："></a>1.2. 三个临时性分支：</h2><p><strong>1.2.1. 功能（feature）分支：</strong>新功能分支，一般一个新功能对应一个分支，功能分支的名字，可以采用 feature-* 的形式命名。</p>
-<p>​    创建一个功能分支：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b feature-x develop</span><br></pre></td></tr></table></figure>
-<p>​    开发完成后，将功能分支合并到 develop 分支：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git checkout develop</span><br><span class="line">git merge --no-ff feature-x</span><br></pre></td></tr></table></figure>
-<p>​    删除 feature 分支：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch -d feature-x</span><br></pre></td></tr></table></figure>
-<p><strong>1.2.2. 预发布（release）分支：</strong>发布分支是从 Develop 分支上面分出来的，用于发布测试版本，测试完后最终需要合并进 Develop 和 Master 分支。它的命名，可以采用release-*的形式。</p>
-<p>​    创建一个预发布分支：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b release-1.2 develop</span><br></pre></td></tr></table></figure>
-<p>​    确认没有问题后，合并到 master 分支：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git checkout master</span><br><span class="line">git merge --no-ff release-1.2</span><br><span class="line">git tag -a 1.2 <span class="comment"># （ 对合并生成的新节点，做一个标签 ）</span></span><br></pre></td></tr></table></figure>
-<p>​    再合并到 develop 分支：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git checkout develop  </span><br><span class="line">git merge --no-ff release-1.2</span><br></pre></td></tr></table></figure>
-<p>​    最后，删除预发布分支：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch -d release-1.2</span><br></pre></td></tr></table></figure>
-<p><strong>1.2.3. 修补bug（fixbug）分支：</strong>用于修复线上版本出现的 Bug 时创建的，基于 Master 分支创建。修补结束以后，再合并进 Master 和 Develop 分支。它的命名，可以采用 fixbug-* 的形式。</p>
-<p>​    创建一个修补 bug 分支：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b fixbug-0.1 master</span><br></pre></td></tr></table></figure>
-<p>​    修补结束后，合并到 master 分支：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git checkout master   </span><br><span class="line">git merge --no-ff fixbug-0.1  </span><br><span class="line">git tag -a 0.1.1</span><br></pre></td></tr></table></figure>
-<p>​    再合并到 develop 分支：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git checkout develop  </span><br><span class="line">git merge --no-ff fixbug-0.1</span><br></pre></td></tr></table></figure>
-<p>​    最后，删除”修补 bug 分支”：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch -d fixbug-0.1</span><br></pre></td></tr></table></figure>
-<h1 id="2-Git-flow-用法"><a href="#2-Git-flow-用法" class="headerlink" title="2. Git flow 用法"></a>2. Git flow 用法</h1><h2 id="2-1-安装"><a href="#2-1-安装" class="headerlink" title="2.1. 安装"></a>2.1. 安装</h2><p>​    MAC OS</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install git-flow-avh</span><br></pre></td></tr></table></figure>
-<p>​    Linux</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install git-flow</span><br></pre></td></tr></table></figure>
-<h2 id="2-2-初始化"><a href="#2-2-初始化" class="headerlink" title="2.2. 初始化"></a>2.2. 初始化</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow init</span><br></pre></td></tr></table></figure>
-<p>这会创建上述5个分支，你必须回答几个关于分支的命名约定的问题。 建议使用默认值。</p>
-<h2 id="2-3-开发新特性"><a href="#2-3-开发新特性" class="headerlink" title="2.3. 开发新特性"></a>2.3. 开发新特性</h2><p>新特性的开发是在feature分支下完成的</p>
-<p>​    2.3.1. 基于develop分支创建新的分支feature/MYFEATURE分支。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git flow feature start MYFEATURE</span><br><span class="line"><span class="comment"># 创建并进入feature/MYFEATURE分支</span></span><br></pre></td></tr></table></figure>
-<p>​    2.3.2. 发布新特性</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git flow feature publish MYFEATURE</span><br><span class="line"><span class="comment"># 将新的特性推送到develop分支</span></span><br></pre></td></tr></table></figure>
-<p>​    2.3.3. 完成新特性</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git flow feature finish MYFEATURE</span><br><span class="line"><span class="comment"># 将会自动如下三部</span></span><br><span class="line"><span class="comment"># 合并 MYFEATURE 分支到 'develop'</span></span><br><span class="line"><span class="comment"># 删除这个新特性分支</span></span><br><span class="line"><span class="comment"># 切换回 'develop' 分支</span></span><br></pre></td></tr></table></figure>
-<h2 id="2-4-发布release版本"><a href="#2-4-发布release版本" class="headerlink" title="2.4. 发布release版本"></a>2.4. 发布release版本</h2><p>基于develop分支创建，完成后自动打tag、推送到master分支、推送回develop分支 </p>
-<pre><code>2.4.1. 基于develop分支在release分支之下创建新分支release/RELEASE
-</code></pre><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git flow release start RELEASE </span><br><span class="line"><span class="comment"># 创建并进入release/RELEASE分支</span></span><br></pre></td></tr></table></figure>
-<p>​    2.4.2. 完成 release 版本</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git flow release finish RELEASE</span><br><span class="line"><span class="comment"># 归并 release 分支到 'master' 分支</span></span><br><span class="line"><span class="comment"># 用 release 分支名打 Tag</span></span><br><span class="line"><span class="comment"># 归并 release 分支到 'develop'</span></span><br><span class="line"><span class="comment"># 移除 release 分支</span></span><br></pre></td></tr></table></figure>
-<h2 id="2-5-紧急修复"><a href="#2-5-紧急修复" class="headerlink" title="2.5. 紧急修复"></a>2.5. 紧急修复</h2><ul>
-<li><p>急修复来自这样的需求：生产环境的版本处于一个不预期状态，需要立即修正。</p>
-</li>
-<li><p>有可能是需要修正 master 分支上某个 TAG 标记的生产版本。</p>
-</li>
-<li><p>基于master分支创建，完成后自动打tag、推送回master分支、推送到develop分支 </p>
-<p>2.5.1. 基于master分支在hotfix分支之下创建新分支hotfix/VERSION</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git flow hotfix start VERSION [BASENAME]</span><br><span class="line"><span class="comment"># [BASENAME]为finish release时填写的版本号</span></span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>​    2.5.2. 完成紧急修复</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git flow hotfix finish VERSION</span><br><span class="line"><span class="comment"># 归并 hotfix 分支到 'master' 分支</span></span><br><span class="line"><span class="comment"># 用 hotfix 分支名打 Tag</span></span><br><span class="line"><span class="comment"># 归并 hotfix 分支到 'develop'</span></span><br><span class="line"><span class="comment"># 移除 hotfix 分支</span></span><br></pre></td></tr></table></figure>
-<h1 id="3-Git-flow-命令"><a href="#3-Git-flow-命令" class="headerlink" title="3. Git flow 命令"></a>3. Git flow 命令</h1><table>
-<thead>
-<tr>
-<th>第一段（命令）</th>
-<th style="text-align:center">第二段（分支）</th>
-<th>第三段（操作）</th>
-<th>第四段（名字）</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>git flow</td>
-<td style="text-align:center">init</td>
-<td>start</td>
-<td>NAME</td>
-</tr>
-<tr>
-<td></td>
-<td style="text-align:center">feature</td>
-<td>finish</td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td style="text-align:center">release</td>
-<td>publish</td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td style="text-align:center">hotfix</td>
-<td>pull</td>
-</tr>
-</tbody>
-</table>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script> 
-
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/linux/" class="article-tag-list-link color1">linux</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a> -->
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/git/" class="article-tag-list-link color4">git</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">git</a> -->
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-      
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/git/" class="article-tag-list-link color4">git</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/09/11/git-flow/">展开全文 >></a>
         </p>
       
 
