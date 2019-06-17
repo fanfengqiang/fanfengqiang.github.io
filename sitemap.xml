@@ -37,7 +37,7 @@
   </url>
   
   <url>
-    <loc>https://blog.fanfengqiang.com/2019/01/26/kubernetes-HA-master%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/</loc>
+    <loc>https://blog.fanfengqiang.com/2019/03/11/kubernetes-TLS-Bootstrapping%E9%85%8D%E7%BD%AE/</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
     
@@ -72,14 +72,7 @@
   </url>
   
   <url>
-    <loc>https://blog.fanfengqiang.com/2019/03/11/kubernetes-TLS-Bootstrapping%E9%85%8D%E7%BD%AE/</loc>
-    
-    <lastmod>2019-05-03T16:12:08.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://blog.fanfengqiang.com/2019/01/25/kubernetes%E7%AE%80%E5%8D%95%E5%AE%89%E8%A3%85/</loc>
+    <loc>https://blog.fanfengqiang.com/2019/01/26/kubernetes-HA-master%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
     
@@ -93,6 +86,13 @@
   </url>
   
   <url>
+    <loc>https://blog.fanfengqiang.com/2019/01/25/kubernetes%E7%AE%80%E5%8D%95%E5%AE%89%E8%A3%85/</loc>
+    
+    <lastmod>2019-05-03T16:12:08.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://blog.fanfengqiang.com/2018/08/23/gitlab%E5%AE%89%E8%A3%85%E3%80%81%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D/</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
@@ -100,14 +100,14 @@
   </url>
   
   <url>
-    <loc>https://blog.fanfengqiang.com/about/index.html</loc>
+    <loc>https://blog.fanfengqiang.com/archives/index.html</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://blog.fanfengqiang.com/archives/index.html</loc>
+    <loc>https://blog.fanfengqiang.com/about/index.html</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
     
