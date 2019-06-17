@@ -16,13 +16,13 @@
 <meta property="og:site_name" content="范丰强的博客">
 <meta property="og:description" content="1. 前言在kubernetes集群中暴露服务主要有如下三种方式：loadbalancer ，NodePort ，Ingress  NodePort：kube-proxy监控service资源，将service对象转化为iptables规则，iptables规则过滤拦截并转发流量到对应的Pod。优点：1.配置简单系统默认支持；缺点：1.iptables规则转发效率低，2.只要安装了kube-pro">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/architecture.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/traefik_dashboard.png">
-<meta property="og:updated_time" content="2019-05-03T16:12:08.000Z">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/architecture.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/traefik_dashboard.png">
+<meta property="og:updated_time" content="2019-06-17T03:37:53.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用traefik作为kubernetes ingress controller并开启letsencrypt证书认证">
 <meta name="twitter:description" content="1. 前言在kubernetes集群中暴露服务主要有如下三种方式：loadbalancer ，NodePort ，Ingress  NodePort：kube-proxy监控service资源，将service对象转化为iptables规则，iptables规则过滤拦截并转发流量到对应的Pod。优点：1.配置简单系统默认支持；缺点：1.iptables规则转发效率低，2.只要安装了kube-pro">
-<meta name="twitter:image" content="https://blog.fanfengqiang.com/images/architecture.png">
+<meta name="twitter:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/architecture.png">
   
     <link rel="alternative" href="/atom.xml" title="范丰强的博客" type="application/atom+xml">
   
@@ -199,7 +199,7 @@
 <ul>
 <li><p>nginx： 关于nginx作为负载均衡器不需要我多说大家都懂，但nginx本身并不是为云原生而设计的，如不支持配置动态加载，从环境变量获取配置等，nginx作为ingress controller的经典项目：<a href="https://github.com/kubernetes/ingress-nginx" target="_blank" rel="noopener">ingress-nginx</a></p>
 </li>
-<li><p>traefik: Træfɪk 是一个为了让部署微服务更加便捷而诞生的现代HTTP反向代理、负载均衡工具。 它支持多种后台 (Docker, Swarm, Kubernetes, Marathon, Mesos, Consul, Etcd, Zookeeper, BoltDB, Rest API, file…) 来自动化、动态的应用它的配置文件设置。(上面这段话摘自官方，总之一句话：云原生设计，支持多种后端，功能强大) <a href="https://docs.traefik.io/" target="_blank" rel="noopener">traefik官方文档</a><br><img src="/images/architecture.png" alt></p>
+<li><p>traefik: Træfɪk 是一个为了让部署微服务更加便捷而诞生的现代HTTP反向代理、负载均衡工具。 它支持多种后台 (Docker, Swarm, Kubernetes, Marathon, Mesos, Consul, Etcd, Zookeeper, BoltDB, Rest API, file…) 来自动化、动态的应用它的配置文件设置。(上面这段话摘自官方，总之一句话：云原生设计，支持多种后端，功能强大) <a href="https://docs.traefik.io/" target="_blank" rel="noopener">traefik官方文档</a><br><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/architecture.png" alt></p>
 </li>
 <li><p>envoy: Envoy 是专为大型现代 SOA（面向服务架构）架构设计的 L7 代理和通信总线.(云原生设计，XDS协议服务发现，C++11编写，功能非常强大，结构复杂概念多)envoy的经典应用有<a href="https://istio.io/" target="_blank" rel="noopener">istio服务网格</a> ，istio服务网格将在以后的文章介绍。</p>
 </li>
@@ -228,7 +228,7 @@
 <h1 id="5-测试"><a href="#5-测试" class="headerlink" title="5. 测试"></a>5. 测试</h1><h2 id="5-1-修改测试文件"><a href="#5-1-修改测试文件" class="headerlink" title="5.1. 修改测试文件"></a>5.1. 修改测试文件</h2><p>需改ui.yaml</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: Service</span><br><span class="line">metadata:</span><br><span class="line">  name: traefik-web-ui</span><br><span class="line">  namespace: kube-system</span><br><span class="line">spec:</span><br><span class="line">  selector:</span><br><span class="line">    k8s-app: traefik-ingress-lb</span><br><span class="line">  ports:</span><br><span class="line">  - name: web</span><br><span class="line">    port: 80</span><br><span class="line">    targetPort: 8080</span><br><span class="line">---</span><br><span class="line">apiVersion: extensions/v1beta1</span><br><span class="line">kind: Ingress</span><br><span class="line">metadata:</span><br><span class="line">  name: traefik-web-ui</span><br><span class="line">  namespace: kube-system</span><br><span class="line">spec:</span><br><span class="line">  rules:</span><br><span class="line">  - host: traefik.5ik8s.com              <span class="comment"># 更改为自己的域名</span></span><br><span class="line">    http:</span><br><span class="line">      paths:</span><br><span class="line">      - path: /</span><br><span class="line">        backend:</span><br><span class="line">          serviceName: traefik-web-ui</span><br><span class="line">          servicePort: web</span><br><span class="line"><span class="comment">#  tls:                                 # 如果上面没有开启lets encrypt也可以使用此项声明证书</span></span><br><span class="line"><span class="comment">#  - secretName: 5ik8s.com</span></span><br></pre></td></tr></table></figure>
 <h2 id="5-2-测试"><a href="#5-2-测试" class="headerlink" title="5.2. 测试"></a>5.2. 测试</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f ui.yaml</span><br></pre></td></tr></table></figure>
-<h2 id="5-3-验证"><a href="#5-3-验证" class="headerlink" title="5.3. 验证"></a>5.3. 验证</h2><p><img src="/images/traefik_dashboard.png" alt></p>
+<h2 id="5-3-验证"><a href="#5-3-验证" class="headerlink" title="5.3. 验证"></a>5.3. 验证</h2><p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/traefik_dashboard.png" alt></p>
 
       
 

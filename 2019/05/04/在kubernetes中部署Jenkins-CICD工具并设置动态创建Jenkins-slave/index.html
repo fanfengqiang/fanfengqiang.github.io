@@ -16,29 +16,29 @@
 <meta property="og:site_name" content="范丰强的博客">
 <meta property="og:description" content="1. 安装Jenkins1.1. 编写manifests配置清单1.1.1. 创建名称空间我们创建一个名字叫jenkins的名称空间，后面所有的资源都放在这个名称空间下，方便管理。 123456# jenkins-ns.yaml ---apiVersion: v1kind: Namespacemetadata:  name: jenkins 1.1.2. 创建PV/PVC因为我们要把设置的配置、安">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/jenkins-init1.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/jenkins-init2.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/jenkins-init3.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/jenkins-init4.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/jenkins-install-plugin-1.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/jenkins-install-plugin-2.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/jenkins-install-plugins-3.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/jenkins-setup.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/jenkins-setup2.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/jenkins-setup3-1.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/jenkins-setup4.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/jenkins-setup5.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/jenkins-setup6.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/jenkins-test1.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/jenkins-test2.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/jenkins-test3.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/jenkins-test4.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/jenkins-test5.png">
-<meta property="og:updated_time" content="2019-05-04T10:57:09.000Z">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-init1.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-init2.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-init3.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-init4.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-install-plugin-1.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-install-plugin-2.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-install-plugins-3.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-setup.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-setup2.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-setup3-1.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-setup4.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-setup5.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-setup6.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-test1.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-test2.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-test3.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-test4.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-test5.png">
+<meta property="og:updated_time" content="2019-06-17T03:43:08.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="在kubernetes中部署Jenkins CICD工具并设置动态创建Jenkins slave">
 <meta name="twitter:description" content="1. 安装Jenkins1.1. 编写manifests配置清单1.1.1. 创建名称空间我们创建一个名字叫jenkins的名称空间，后面所有的资源都放在这个名称空间下，方便管理。 123456# jenkins-ns.yaml ---apiVersion: v1kind: Namespacemetadata:  name: jenkins 1.1.2. 创建PV/PVC因为我们要把设置的配置、安">
-<meta name="twitter:image" content="https://blog.fanfengqiang.com/images/jenkins-init1.png">
+<meta name="twitter:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-init1.png">
   
     <link rel="alternative" href="/atom.xml" title="范丰强的博客" type="application/atom+xml">
   
@@ -212,26 +212,26 @@
 <h3 id="1-1-5-创建service"><a href="#1-1-5-创建service" class="headerlink" title="1.1.5. 创建service"></a>1.1.5. 创建service</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># jenkins-svc.yaml</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">  namespace:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">  labels:</span></span><br><span class="line"><span class="attr">    app:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  selector:</span></span><br><span class="line"><span class="attr">    app:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">  ports:</span></span><br><span class="line"><span class="attr">  - name:</span> <span class="string">web</span></span><br><span class="line"><span class="attr">    port:</span> <span class="number">8080</span></span><br><span class="line"><span class="attr">    targetPort:</span> <span class="number">8080</span></span><br><span class="line"><span class="attr">  - name:</span> <span class="string">agent</span></span><br><span class="line"><span class="attr">    port:</span> <span class="number">50000</span></span><br><span class="line"><span class="attr">    targetPort:</span> <span class="number">50000</span></span><br></pre></td></tr></table></figure>
 <h3 id="1-1-6-创建ingress"><a href="#1-1-6-创建ingress" class="headerlink" title="1.1.6. 创建ingress"></a>1.1.6. 创建ingress</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># jenkins-ingress.yaml</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">extensions/v1beta1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Ingress</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">  namespace:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  rules:</span></span><br><span class="line"><span class="attr">  - host:</span> <span class="string">jenkins.5ik8s.com</span></span><br><span class="line"><span class="attr">    http:</span></span><br><span class="line"><span class="attr">      paths:</span></span><br><span class="line"><span class="attr">      - path:</span> <span class="string">/</span></span><br><span class="line"><span class="attr">        backend:</span></span><br><span class="line"><span class="attr">          serviceName:</span> <span class="string">jenkins</span></span><br><span class="line"><span class="attr">          servicePort:</span> <span class="number">8080</span></span><br></pre></td></tr></table></figure>
 <h2 id="1-2-应用配置"><a href="#1-2-应用配置" class="headerlink" title="1.2. 应用配置"></a>1.2. 应用配置</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f jenkins-ns.yaml</span><br><span class="line">kubectl apply -f jenkins-rbac.yaml</span><br><span class="line">kubectl apply -f jenkins-pvc.yaml</span><br><span class="line">kubectl apply -f jenkins-deploy.yaml</span><br><span class="line">kubectl apply -f jenkins-svc.yaml</span><br><span class="line">kubectl apply -f jenkins-ingress.yaml</span><br></pre></td></tr></table></figure>
-<h2 id="1-3-初始化"><a href="#1-3-初始化" class="headerlink" title="1.3. 初始化"></a>1.3. 初始化</h2><p><img src="/images/jenkins-init1.png" alt></p>
-<p><img src="/images/jenkins-init2.png" alt></p>
+<h2 id="1-3-初始化"><a href="#1-3-初始化" class="headerlink" title="1.3. 初始化"></a>1.3. 初始化</h2><p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-init1.png" alt></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-init2.png" alt></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl <span class="built_in">exec</span> -it -n jenkins jenkins-5dfc7749fb-tc59p -- cat /var/jenkins_home/secrets/initialAdminPassword</span><br></pre></td></tr></table></figure>
-<h3 id="1-3-1-安装推荐插件"><a href="#1-3-1-安装推荐插件" class="headerlink" title="1.3.1. 安装推荐插件"></a>1.3.1. 安装推荐插件</h3><p><img src="/images/jenkins-init3.png" alt></p>
-<h3 id="1-3-2-设置管理员密码"><a href="#1-3-2-设置管理员密码" class="headerlink" title="1.3.2. 设置管理员密码"></a>1.3.2. 设置管理员密码</h3><p><img src="/images/jenkins-init4.png" alt></p>
-<h1 id="2-配置jenkins"><a href="#2-配置jenkins" class="headerlink" title="2. 配置jenkins"></a>2. 配置jenkins</h1><h2 id="2-1-安装必要插件"><a href="#2-1-安装必要插件" class="headerlink" title="2.1. 安装必要插件"></a>2.1. 安装必要插件</h2><p><img src="/images/jenkins-install-plugin-1.png" alt></p>
-<p><img src="/images/jenkins-install-plugin-2.png" alt></p>
-<p><img src="/images/jenkins-install-plugins-3.png" alt></p>
-<h2 id="2-2-配置插件"><a href="#2-2-配置插件" class="headerlink" title="2.2. 配置插件"></a>2.2. 配置插件</h2><h3 id="2-2-1-重启jenkins"><a href="#2-2-1-重启jenkins" class="headerlink" title="2.2.1. 重启jenkins"></a>2.2.1. 重启jenkins</h3><h3 id="2-2-2-配置kubernetes启动jenkins-slave的Pod模板"><a href="#2-2-2-配置kubernetes启动jenkins-slave的Pod模板" class="headerlink" title="2.2.2. 配置kubernetes启动jenkins slave的Pod模板"></a>2.2.2. 配置kubernetes启动jenkins slave的Pod模板</h3><p><img src="/images/jenkins-setup.png" alt></p>
-<p><img src="/images/jenkins-setup2.png" alt></p>
-<p><img src="/images/jenkins-setup3-1.png" alt></p>
-<p><img src="/images/jenkins-setup4.png" alt></p>
-<p><img src="/images/jenkins-setup5.png" alt></p>
-<p><img src="/images/jenkins-setup6.png" alt></p>
+<h3 id="1-3-1-安装推荐插件"><a href="#1-3-1-安装推荐插件" class="headerlink" title="1.3.1. 安装推荐插件"></a>1.3.1. 安装推荐插件</h3><p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-init3.png" alt></p>
+<h3 id="1-3-2-设置管理员密码"><a href="#1-3-2-设置管理员密码" class="headerlink" title="1.3.2. 设置管理员密码"></a>1.3.2. 设置管理员密码</h3><p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-init4.png" alt></p>
+<h1 id="2-配置jenkins"><a href="#2-配置jenkins" class="headerlink" title="2. 配置jenkins"></a>2. 配置jenkins</h1><h2 id="2-1-安装必要插件"><a href="#2-1-安装必要插件" class="headerlink" title="2.1. 安装必要插件"></a>2.1. 安装必要插件</h2><p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-install-plugin-1.png" alt></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-install-plugin-2.png" alt></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-install-plugins-3.png" alt></p>
+<h2 id="2-2-配置插件"><a href="#2-2-配置插件" class="headerlink" title="2.2. 配置插件"></a>2.2. 配置插件</h2><h3 id="2-2-1-重启jenkins"><a href="#2-2-1-重启jenkins" class="headerlink" title="2.2.1. 重启jenkins"></a>2.2.1. 重启jenkins</h3><h3 id="2-2-2-配置kubernetes启动jenkins-slave的Pod模板"><a href="#2-2-2-配置kubernetes启动jenkins-slave的Pod模板" class="headerlink" title="2.2.2. 配置kubernetes启动jenkins slave的Pod模板"></a>2.2.2. 配置kubernetes启动jenkins slave的Pod模板</h3><p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-setup.png" alt></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-setup2.png" alt></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-setup3-1.png" alt></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-setup4.png" alt></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-setup5.png" alt></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-setup6.png" alt></p>
 <p>本文中用到的Docker镜像地址：<a href="https://github.com/fanfengqiang/jenkins_slave" target="_blank" rel="noopener">fanfengqiang/jenkins_slave</a></p>
-<h1 id="3-测试"><a href="#3-测试" class="headerlink" title="3. 测试"></a>3. 测试</h1><h2 id="3-1-创建项目"><a href="#3-1-创建项目" class="headerlink" title="3.1. 创建项目"></a>3.1. 创建项目</h2><p><img src="/images/jenkins-test1.png" alt></p>
-<h2 id="3-2-配置项目"><a href="#3-2-配置项目" class="headerlink" title="3.2. 配置项目"></a>3.2. 配置项目</h2><p><img src="/images/jenkins-test2.png" alt></p>
-<p><img src="/images/jenkins-test3.png" alt></p>
-<h2 id="3-3-触发任务"><a href="#3-3-触发任务" class="headerlink" title="3.3. 触发任务"></a>3.3. 触发任务</h2><h2 id="3-4-查看结果"><a href="#3-4-查看结果" class="headerlink" title="3.4. 查看结果"></a>3.4. 查看结果</h2><p><img src="/images/jenkins-test4.png" alt></p>
-<p><img src="/images/jenkins-test5.png" alt></p>
+<h1 id="3-测试"><a href="#3-测试" class="headerlink" title="3. 测试"></a>3. 测试</h1><h2 id="3-1-创建项目"><a href="#3-1-创建项目" class="headerlink" title="3.1. 创建项目"></a>3.1. 创建项目</h2><p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-test1.png" alt></p>
+<h2 id="3-2-配置项目"><a href="#3-2-配置项目" class="headerlink" title="3.2. 配置项目"></a>3.2. 配置项目</h2><p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-test2.png" alt></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-test3.png" alt></p>
+<h2 id="3-3-触发任务"><a href="#3-3-触发任务" class="headerlink" title="3.3. 触发任务"></a>3.3. 触发任务</h2><h2 id="3-4-查看结果"><a href="#3-4-查看结果" class="headerlink" title="3.4. 查看结果"></a>3.4. 查看结果</h2><p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-test4.png" alt></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/jenkins-test5.png" alt></p>
 <p>从上图可以看出当用任务需要在jenkins slave上执行时k8s会自动创建相应Pods</p>
 
       

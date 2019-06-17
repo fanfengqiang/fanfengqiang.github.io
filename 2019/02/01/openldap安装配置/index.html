@@ -16,16 +16,16 @@
 <meta property="og:site_name" content="范丰强的博客">
 <meta property="og:description" content="1. LDAP介绍轻型目录访问协议（英文：Lightweight Directory Access Protocol，缩写：LDAP）是一个开放的，中立的，工业标准的应用协议，通过IP协议提供访问控制和维护分布式信息的目录信息。 目录是一个为查询、浏览和搜索而优化的专业分布式数据库，它呈树状结构组织数据，就好象Linux/Unix系统中的文件目录一样。目录数据库和关系数据库不同，它有优异的读性能，">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/ldap_intro_dctree.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/ldap-tls.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/slapconf.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/ldap-port.png">
-<meta property="og:image" content="https://blog.fanfengqiang.com/images/phpldapadmin.png">
-<meta property="og:updated_time" content="2019-05-03T16:12:08.000Z">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/ldap_intro_dctree.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/ldap-tls.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/slapconf.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/ldap-port.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/phpldapadmin.png">
+<meta property="og:updated_time" content="2019-06-17T03:45:28.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="openldap安装配置">
 <meta name="twitter:description" content="1. LDAP介绍轻型目录访问协议（英文：Lightweight Directory Access Protocol，缩写：LDAP）是一个开放的，中立的，工业标准的应用协议，通过IP协议提供访问控制和维护分布式信息的目录信息。 目录是一个为查询、浏览和搜索而优化的专业分布式数据库，它呈树状结构组织数据，就好象Linux/Unix系统中的文件目录一样。目录数据库和关系数据库不同，它有优异的读性能，">
-<meta name="twitter:image" content="https://blog.fanfengqiang.com/images/ldap_intro_dctree.png">
+<meta name="twitter:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/ldap_intro_dctree.png">
   
     <link rel="alternative" href="/atom.xml" title="范丰强的博客" type="application/atom+xml">
   
@@ -191,7 +191,7 @@
       
         <h1 id="1-LDAP介绍"><a href="#1-LDAP介绍" class="headerlink" title="1. LDAP介绍"></a>1. LDAP介绍</h1><p>轻型目录访问协议（英文：Lightweight Directory Access Protocol，缩写：LDAP）是一个开放的，中立的，工业标准的应用协议，通过IP协议提供访问控制和维护分布式信息的目录信息。</p>
 <p>目录是一个为查询、浏览和搜索而优化的专业分布式数据库，它呈树状结构组织数据，就好象Linux/Unix系统中的文件目录一样。目录数据库和关系数据库不同，它有优异的读性能，但写性能差，并且没有事务处理、回滚等复杂功能，不适于存储修改频繁的数据。所以目录天生是用来查询的，就好象它的名字一样。</p>
-<p><img src="/images/ldap_intro_dctree.png" alt></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/ldap_intro_dctree.png" alt></p>
 <h1 id="2-常用组件"><a href="#2-常用组件" class="headerlink" title="2. 常用组件"></a>2. 常用组件</h1><h2 id="2-1-openLDAP"><a href="#2-1-openLDAP" class="headerlink" title="2.1. openLDAP"></a>2.1. openLDAP</h2><p>OpenLDAP是轻型目录访问协议（Lightweight Directory Access Protocol，LDAP）的自由和开源的实现，在其OpenLDAP许可证下发行，并已经被包含在众多流行的Linux发行版中。</p>
 <h2 id="2-2-phpLDAPadmin"><a href="#2-2-phpLDAPadmin" class="headerlink" title="2.2. phpLDAPadmin"></a>2.2. phpLDAPadmin</h2><p>一个开源的ldap web管理界面，语言用PHP编写，依赖PHP环境</p>
 <h2 id="2-3-Self-Service-Password"><a href="#2-3-Self-Service-Password" class="headerlink" title="2.3. Self Service Password"></a>2.3. Self Service Password</h2><p>ldap的密码需改和密码找回</p>
@@ -204,11 +204,11 @@
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl req -new -x509 -nodes -out /etc/openldap/certs/ldap.cert -keyout /etc/openldap/certs/ldap.key -days 365</span><br></pre></td></tr></table></figure>
 <h4 id="3-2-3-2-修改用户组"><a href="#3-2-3-2-修改用户组" class="headerlink" title="3.2.3.2. 修改用户组"></a>3.2.3.2. 修改用户组</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chown -R ldap:ldap /etc/openldap/certs/*</span><br></pre></td></tr></table></figure>
 <h4 id="3-2-3-3-修改配置文件"><a href="#3-2-3-3-修改配置文件" class="headerlink" title="3.2.3.3. 修改配置文件"></a>3.2.3.3. 修改配置文件</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/openldap/slapd.conf</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加如下三行</span></span><br><span class="line"><span class="comment">#TLSCACertificateFile /etc/openldap/certs/ca.crt</span></span><br><span class="line"><span class="comment">#TLSCertificateFile /etc/openldap/certs/ldapserver.crt</span></span><br><span class="line"><span class="comment">#TLSCertificateKeyFile /etc/openldap/certs/ldapkey.pem</span></span><br></pre></td></tr></table></figure>
-<p><img src="/images/ldap-tls.png" alt></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/ldap-tls.png" alt></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/sysconfig/slapd</span><br></pre></td></tr></table></figure>
-<p><img src="/images/slapconf.png" alt></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/slapconf.png" alt></p>
 <h3 id="3-2-4-启动服务"><a href="#3-2-4-启动服务" class="headerlink" title="3.2.4. 启动服务"></a>3.2.4. 启动服务</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl <span class="built_in">enable</span> slapd</span><br><span class="line">systemctl start slapd</span><br></pre></td></tr></table></figure>
-<h3 id="3-2-5-查看端口是否启动"><a href="#3-2-5-查看端口是否启动" class="headerlink" title="3.2.5. 查看端口是否启动"></a>3.2.5. 查看端口是否启动</h3><p><img src="/images/ldap-port.png" alt></p>
+<h3 id="3-2-5-查看端口是否启动"><a href="#3-2-5-查看端口是否启动" class="headerlink" title="3.2.5. 查看端口是否启动"></a>3.2.5. 查看端口是否启动</h3><p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/ldap-port.png" alt></p>
 <p>389是ldap端口，636是ldaps端口（只有启动TLS加密功能才会监听此端口）</p>
 <h3 id="3-2-6-生成openldap的管理员密码"><a href="#3-2-6-生成openldap的管理员密码" class="headerlink" title="3.2.6. 生成openldap的管理员密码"></a>3.2.6. 生成openldap的管理员密码</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -s后面跟的是明文密码，结果是密文密码</span></span><br><span class="line">slappasswd -s 5ik8s </span><br><span class="line"><span class="comment">#&#123;SSHA&#125;dC1q0RSZCTUHbJGzDFHVsghsQk3cr9js</span></span><br></pre></td></tr></table></figure>
 <h3 id="3-2-7-将管理员密码导入到-LDAP配置文件"><a href="#3-2-7-将管理员密码导入到-LDAP配置文件" class="headerlink" title="3.2.7. 将管理员密码导入到 LDAP配置文件"></a>3.2.7. 将管理员密码导入到 LDAP配置文件</h3><h4 id="3-2-7-1-编辑文件chrootpw-ldif"><a href="#3-2-7-1-编辑文件chrootpw-ldif" class="headerlink" title="3.2.7.1. 编辑文件chrootpw.ldif"></a>3.2.7.1. 编辑文件chrootpw.ldif</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dn: olcDatabase=&#123;0&#125;config,cn=config</span><br><span class="line">changetype: modify</span><br><span class="line">add: olcRootPW</span><br><span class="line">olcRootPW: &#123;SSHA&#125;dC1q0RSZCTUHbJGzDFHVsghsQk3cr9js</span><br></pre></td></tr></table></figure>
@@ -223,7 +223,7 @@
 <h2 id="3-3-phpLDAPadmin"><a href="#3-3-phpLDAPadmin" class="headerlink" title="3.3. phpLDAPadmin"></a>3.3. phpLDAPadmin</h2><h3 id="3-3-1-安装"><a href="#3-3-1-安装" class="headerlink" title="3.3.1. 安装"></a>3.3.1. 安装</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># phpldapadmin在epel源</span></span><br><span class="line">yum -y install phpldapadmin</span><br></pre></td></tr></table></figure>
 <p>默认会依赖安装httpd，php。（php默认以模块方式安装）</p>
 <h3 id="3-3-2-配置"><a href="#3-3-2-配置" class="headerlink" title="3.3.2. 配置"></a>3.3.2. 配置</h3><h4 id="3-3-2-1-修改apache为外网可访问"><a href="#3-3-2-1-修改apache为外网可访问" class="headerlink" title="3.3.2.1. 修改apache为外网可访问"></a>3.3.2.1. 修改apache为外网可访问</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/httpd/conf.d/phpldapadmin.conf</span><br></pre></td></tr></table></figure>
-<p><img src="/images/phpldapadmin.png" alt></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/phpldapadmin.png" alt></p>
 <p>局域网内部也可以改为</p>
 <p>   Require local<br>   Require ip 192.168.0.0/16         #在这里添加允许访问的IP</p>
 <h4 id="3-3-2-2-配置登录方式"><a href="#3-3-2-2-配置登录方式" class="headerlink" title="3.3.2.2. 配置登录方式"></a>3.3.2.2. 配置登录方式</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/phpldapadmin/config.php</span><br><span class="line"><span class="comment"># 修改第397行</span></span><br><span class="line"><span class="comment"># $servers-&gt;setValue('login','attr','uid');  #改为下行</span></span><br><span class="line"><span class="comment"># $servers-&gt;setValue('login','attr','dn');</span></span><br></pre></td></tr></table></figure>
