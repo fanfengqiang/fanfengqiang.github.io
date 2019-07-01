@@ -37,14 +37,14 @@
   </url>
   
   <url>
-    <loc>https://blog.fanfengqiang.com/2019/01/26/kubernetes-HA-master%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/</loc>
+    <loc>https://blog.fanfengqiang.com/2019/03/11/kubernetes-TLS-Bootstrapping%E9%85%8D%E7%BD%AE/</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://blog.fanfengqiang.com/2019/03/11/kubernetes-TLS-Bootstrapping%E9%85%8D%E7%BD%AE/</loc>
+    <loc>https://blog.fanfengqiang.com/2019/01/26/kubernetes-HA-master%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
     
@@ -72,6 +72,13 @@
   </url>
   
   <url>
+    <loc>https://blog.fanfengqiang.com/2019/03/17/%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91kubernetes-dashboard/</loc>
+    
+    <lastmod>2019-05-03T16:12:08.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://blog.fanfengqiang.com/2018/12/26/glusterfs%E4%BD%9C%E4%B8%BAkubernetes%E5%90%8E%E7%AB%AFstorageclass/</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
@@ -86,13 +93,6 @@
   </url>
   
   <url>
-    <loc>https://blog.fanfengqiang.com/2019/03/17/%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91kubernetes-dashboard/</loc>
-    
-    <lastmod>2019-05-03T16:12:08.000Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://blog.fanfengqiang.com/2019/04/01/%E8%87%AA%E5%B7%B1%E5%8A%A8%E6%89%8B%E6%89%A9%E5%B1%95K8S%E5%8A%9F%E8%83%BD%E2%80%94%E2%80%94%E2%80%94%E2%80%94%E4%B8%BA%E8%87%AA%E5%AE%9A%E4%B9%89%E8%B5%84%E6%BA%90CRD%E5%86%99%E4%B8%80%E4%B8%AA%E6%8E%A7%E5%88%B6%E5%99%A8/</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
@@ -100,14 +100,14 @@
   </url>
   
   <url>
-    <loc>https://blog.fanfengqiang.com/about/index.html</loc>
+    <loc>https://blog.fanfengqiang.com/archives/index.html</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://blog.fanfengqiang.com/archives/index.html</loc>
+    <loc>https://blog.fanfengqiang.com/about/index.html</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
     
