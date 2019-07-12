@@ -6,18 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="https://blog.fanfengqiang.com">
-  <title>Tag: kubernetes | 范丰强的博客</title>
+  <title>使用operator-sdk构建kubernetesCRD控制器实现自动申请TLS证书 | 范丰强的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="blog">
-<meta property="og:type" content="website">
-<meta property="og:title" content="范丰强的博客">
-<meta property="og:url" content="https://blog.fanfengqiang.com/tags/kubernetes/index.html">
+  <meta name="description" content="cert-operator项目由来早些时候写过一个kubernetes自定义资源CRD的controller,主要是声明一个证书需求,由控制器自动申请一个证书,并保存为一个secret,项目路径cert-controller 本项目与上述项目功能一致,只不过是用了一个框架对其做了重构.    项目 cert-controller cert-operator     框架 sample-apiser">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用operator-sdk构建kubernetesCRD控制器实现自动申请TLS证书">
+<meta property="og:url" content="https://blog.fanfengqiang.com/2019/07/12/使用operator-sdk构建kubernetesCRD控制器实现自动申请TLS证书/index.html">
 <meta property="og:site_name" content="范丰强的博客">
-<meta property="og:description" content="blog">
+<meta property="og:description" content="cert-operator项目由来早些时候写过一个kubernetes自定义资源CRD的controller,主要是声明一个证书需求,由控制器自动申请一个证书,并保存为一个secret,项目路径cert-controller 本项目与上述项目功能一致,只不过是用了一个框架对其做了重构.    项目 cert-controller cert-operator     框架 sample-apiser">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-07-12T03:17:45.193Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="范丰强的博客">
-<meta name="twitter:description" content="blog">
+<meta name="twitter:title" content="使用operator-sdk构建kubernetesCRD控制器实现自动申请TLS证书">
+<meta name="twitter:description" content="cert-operator项目由来早些时候写过一个kubernetes自定义资源CRD的controller,主要是声明一个证书需求,由控制器自动申请一个证书,并保存为一个secret,项目路径cert-controller 本项目与上述项目功能一致,只不过是用了一个框架对其做了重构.    项目 cert-controller cert-operator     框架 sample-apiser">
   
     <link rel="alternative" href="/atom.xml" title="范丰强的博客" type="application/atom+xml">
   
@@ -161,343 +162,278 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-使用operator-sdk构建kubernetesCRD控制器实现自动申请TLS证书" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      使用operator-sdk构建kubernetesCRD控制器实现自动申请TLS证书
+    </h1>
+  
+
+        
+        <a href="/2019/07/12/使用operator-sdk构建kubernetesCRD控制器实现自动申请TLS证书/" class="archive-article-date">
+  	<time datetime="2019-07-12T03:10:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-07-12</time>
+</a>
+        
+      </header>
     
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="cert-operator"><a href="#cert-operator" class="headerlink" title="cert-operator"></a><a href="https://github.com/fanfengqiang/cert-operator" target="_blank" rel="noopener">cert-operator</a></h1><h2 id="项目由来"><a href="#项目由来" class="headerlink" title="项目由来"></a>项目由来</h2><p>早些时候写过一个kubernetes自定义资源CRD的controller,主要是声明一个证书需求,由控制器自动申请一个证书,并保存为一个secret,项目路径<a href="https://github.com/fanfengqiang/cert-controller" target="_blank" rel="noopener">cert-controller</a></p>
+<p>本项目与上述项目功能一致,只不过是用了一个框架对其做了重构.</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>cert-controller</th>
+<th>cert-operator</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>框架</td>
+<td><a href="https://github.com/kubernetes/sample-controller" target="_blank" rel="noopener">sample-apiserver</a></td>
+<td><a href="https://github.com/operator-framework/operator-sdk" target="_blank" rel="noopener">operator-sdk</a></td>
+</tr>
+<tr>
+<td>框架维护者</td>
+<td>kubernetes官方社区</td>
+<td>coreOS</td>
+</tr>
+<tr>
+<td>证书申请方式</td>
+<td>acme</td>
+<td>acme</td>
+</tr>
+<tr>
+<td>证书申请软件</td>
+<td><a href="https://github.com/Neilpang/acme.sh" target="_blank" rel="noopener">acme.sh</a></td>
+<td><a href="https://github.com/go-acme/lego" target="_blank" rel="noopener">lego</a></td>
+</tr>
+<tr>
+<td>证书软件调用方式</td>
+<td>容器中安装acme.sh软件+go调用系统命令</td>
+<td>go调用lego库</td>
+</tr>
+</tbody>
+</table>
+<p>operator-sdk成熟度较高,且在openshift中有大量应用.本项目摒弃了上个项目调用系统命令的低效调用方式,直接采用golang调用lego(也为golang开发)原生库.</p>
+<h2 id="项目构建"><a href="#项目构建" class="headerlink" title="项目构建"></a>项目构建</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p <span class="variable">$GOPATH</span>/src/github.com/fanfengqiang</span><br><span class="line"><span class="built_in">cd</span> <span class="variable">$GOPATH</span>/src/github.com/fanfengqiang</span><br><span class="line">git <span class="built_in">clone</span> git@github.com:fanfengqiang/cert-operator.git</span><br><span class="line">operator-sdk build fanfengqiang/cert-operator:v1.0</span><br></pre></td></tr></table></figure>
+<h2 id="使用说明"><a href="#使用说明" class="headerlink" title="使用说明"></a>使用说明</h2><p>1.创建自定义资源CRD</p>
+   <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建CRD资源</span></span><br><span class="line">kubectl apply -f deploy/crds/certoperator_v1beta1_cert_crd.yaml</span><br><span class="line"><span class="comment"># 创建控制器所需的SA</span></span><br><span class="line">kubectl apply -f deploy/service_account.yaml</span><br><span class="line"><span class="comment"># 创建角色和角色绑定</span></span><br><span class="line">kubectl apply -f deploy/clusterrole.yaml</span><br><span class="line">kubectl apply -f deploy/clusterrole_binding.yaml</span><br><span class="line"><span class="comment"># 创建控制器</span></span><br><span class="line">kubectl apply -f deploy/operator.yaml</span><br></pre></td></tr></table></figure>
+<p>2.编写cert资源清单并应用</p>
+   <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cat deploy/crds/certoperator_v1beta1_cert_cr.yaml</span></span><br><span class="line">apiVersion: certoperator.5ik8s.com/v1beta1</span><br><span class="line">kind: Cert</span><br><span class="line">metadata:</span><br><span class="line">  name: www.5ik8s.com</span><br><span class="line">spec:</span><br><span class="line">  secretName: www.5ik8s.com</span><br><span class="line">  domain: www.5ik8s.com</span><br><span class="line">  email: <span class="string">"1415228958@qq.com"</span></span><br><span class="line">  validityPeriod: 30</span><br><span class="line">  provider: alidns</span><br><span class="line">  envs:</span><br><span class="line">    ALICLOUD_ACCESS_KEY: <span class="string">"LTAIXXXXXXXXXyzLu"</span></span><br><span class="line">    ALICLOUD_SECRET_KEY: <span class="string">"iH5sCTf4CzXXXXXXX9GLL2AsLW2"</span></span><br></pre></td></tr></table></figure>
+   <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 应用资源清单</span></span><br><span class="line">kubectl apply -f deploy/crds/certoperator_v1beta1_cert_cr.yaml</span><br></pre></td></tr></table></figure>
+<p>3.参数定义</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>.metadata.name</td>
+<td>cert资源的名字</td>
+</tr>
+<tr>
+<td>.spec.secretName</td>
+<td>生成的secret的名字</td>
+</tr>
+<tr>
+<td>.spec.domain</td>
+<td>生成证书的域名</td>
+</tr>
+<tr>
+<td>.spec.validityPeriod</td>
+<td>secret的有效时长，单位天，范围1~89</td>
+</tr>
+<tr>
+<td>.spec.provider</td>
+<td>域名托管商的标示</td>
+</tr>
+<tr>
+<td>.spec.envs</td>
+<td>域名托管商API的accesskey和secret</td>
+</tr>
+</tbody>
+</table>
+<p>完整域名托管商的格式，accesskey和secret格式<a href="https://go-acme.github.io/lego/dns/" target="_blank" rel="noopener">参见</a></p>
+<h2 id="致谢"><a href="#致谢" class="headerlink" title="致谢"></a>致谢</h2><p>本项目参考了如下两个项目</p>
+<ul>
+<li><a href="https://github.com/operator-framework/operator-sdk-samples/tree/master/memcached-operator" target="_blank" rel="noopener">memcached-operator</a></li>
+<li><a href="https://github.com/go-acme/lego" target="_blank" rel="noopener">lego</a></li>
+</ul>
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script> 
+
+  <span id="busuanzi_container_page_pv">
+    ⋉(●本文总阅读量 <span id="busuanzi_value_page_pv"></span> 次●)⋊
+  </span>
+
       
       
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2019" class="archive-year">2019</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/05/04/在kubernetes中部署Jenkins-CICD工具并设置动态创建Jenkins-slave/" class="archive-article-date">
-  	<time datetime="2019-05-04T10:56:11.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-05-04</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/05/04/在kubernetes中部署Jenkins-CICD工具并设置动态创建Jenkins-slave/">在kubernetes中部署Jenkins CICD工具并设置动态创建Jenkins slave</a>
-    </h1>
-  
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/jenkins/" class="article-tag-list-link color3">jenkins</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">jenkins</a> -->
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/04/27/使用traefik作为kubernetes-ingress-controller并开启letsencrypt证书认证/" class="archive-article-date">
-  	<time datetime="2019-04-27T12:13:13.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-27</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/04/27/使用traefik作为kubernetes-ingress-controller并开启letsencrypt证书认证/">使用traefik作为kubernetes ingress controller并开启letsencrypt证书认证</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/traefik/" class="article-tag-list-link color3">traefik</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">traefik</a> -->
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/ingress-controller/" class="article-tag-list-link color4">ingress controller</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">ingress controller</a> -->
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/04/01/自己动手扩展K8S功能————为自定义资源CRD写一个控制器/" class="archive-article-date">
-  	<time datetime="2019-04-01T10:13:23.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-01</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/04/01/自己动手扩展K8S功能————为自定义资源CRD写一个控制器/">自己动手扩展K8S功能————为自定义资源CRD写一个控制器</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/03/17/源码编译kubernetes-dashboard/" class="archive-article-date">
-  	<time datetime="2019-03-17T03:19:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-17</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/03/17/源码编译kubernetes-dashboard/">源码编译kubernetes dashboard</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/03/11/kubernetes-TLS-Bootstrapping配置/" class="archive-article-date">
-  	<time datetime="2019-03-11T09:20:07.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-11</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/03/11/kubernetes-TLS-Bootstrapping配置/">kubernetes TLS Bootstrapping配置</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/01/26/kubernetes-HA-master集群搭建/" class="archive-article-date">
-  	<time datetime="2019-01-26T07:03:05.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-01-26</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/01/26/kubernetes-HA-master集群搭建/">kubernetes HA master集群搭建</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
       
-        </div></section>
+
       
+
       
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2018" class="archive-year">2018</a>
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2018/12/26/glusterfs作为kubernetes后端storageclass/" class="archive-article-date">
-  	<time datetime="2018-12-26T05:52:37.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-12-26</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/12/26/glusterfs作为kubernetes后端storageclass/">glusterfs作为kubernetes后端storageclass</a>
-    </h1>
-  
+      </div>
+    </span>
+  </div>
+</div>
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/glusterfs/" class="article-tag-list-link color5">glusterfs</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">glusterfs</a> -->
-        		</li>
-      		
-		</ul>
-	</div>
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=https://blog.fanfengqiang.com/2019/07/12/使用operator-sdk构建kubernetesCRD控制器实现自动申请TLS证书/" alt="微信分享二维码">
+    </div>
+</div>
 
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
   
   
-    </div></section>
+    <a href="/2019/07/10/二进制部署k8s-HA集群-md/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">二进制部署k8s-HA集群.md</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#cert-operator"><span class="toc-number">1.</span> <span class="toc-text">cert-operator</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#项目由来"><span class="toc-number">1.1.</span> <span class="toc-text">项目由来</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#项目构建"><span class="toc-number">1.2.</span> <span class="toc-text">项目构建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用说明"><span class="toc-number">1.3.</span> <span class="toc-text">使用说明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#致谢"><span class="toc-number">1.4.</span> <span class="toc-text">致谢</span></a></li></ol></li></ol>
+                    </div>
+                </span>
+            </div>
+        </div>
+        
+    </div>
+</aside>
+
+
+
+  
+  
   
 
-    
+  
+
+  
+
+  
+  <div id="gitment-ctn"></div> 
+<link rel="stylesheet" href="https://jjeejj.github.io/css/gitment.css">
+<script src="https://jjeejj.github.io/js/gitment.js"></script>
+<script>
+var gitment = new Gitment({
+  id: "Fri Jul 12 2019 11:10:09 GMT+0800",
+  owner: 'fanfengqiang',
+  repo: 'fanfengqiang.github.io',
+  oauth: {
+    client_id: '92cb9c55315cd2f56161',
+    client_secret: 'ff3a25c4c99963216f4bbf4004c17b8383f65621',
+  },
+})
+gitment.render('gitment-ctn')
+</script>
+
+  
 
 
           </div>
@@ -525,9 +461,9 @@
 	var yiliaConfig = {
 		mathjax: true,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
-		isTag: true,
+		isTag: false,
 		isCategory: false,
 		open_in_new: false,
 		toc_hide_index: true,
