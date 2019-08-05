@@ -184,7 +184,7 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h1 id="起因"><a href="#起因" class="headerlink" title="起因"></a>起因</h1><p>最近收到在中国XX银行部署kubernetes的同事的求救,他的kubernetes环境中使用了flannel网络插件,刚部署的时候一切正常一旦节点重启后网络插件就无法正常启动(状况如下图),为此他已经困扰了好几天了.</p>
-<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20190727181502.png" alt></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20190805221401.png" alt></p>
 <p>为了找出问题根因,同事在公司内部用虚拟机搭建了测试环境并且问题成功复现,剩下的就是我的找bug之路.</p>
 <h1 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h1><p>从上图可以看出flannel在访问apiserver(<a href="https://slb.mpaas.com)时超时.下面从这三个方面分析" target="_blank" rel="noopener">https://slb.mpaas.com)时超时.下面从这三个方面分析</a></p>
 <ul>
@@ -1686,11 +1686,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">gitlab</a>
+                <a href="javascript:void(0)" class="js-tag color3">jenkins</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">jenkins</a>
+                <a href="javascript:void(0)" class="js-tag color2">gitlab</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1698,11 +1698,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">flannel</a>
+                <a href="javascript:void(0)" class="js-tag color5">glusterfs</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">glusterfs</a>
+                <a href="javascript:void(0)" class="js-tag color3">flannel</a>
               </li>
              
               <li class="article-tag-list-item">

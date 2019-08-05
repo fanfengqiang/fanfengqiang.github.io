@@ -16,7 +16,7 @@
 <meta property="og:site_name" content="范丰强的博客">
 <meta property="og:description" content="起因最近收到在中国XX银行部署kubernetes的同事的求救,他的kubernetes环境中使用了flannel网络插件,刚部署的时候一切正常一旦节点重启后网络插件就无法正常启动(状况如下图),为此他已经困扰了好几天了.  为了找出问题根因,同事在公司内部用虚拟机搭建了测试环境并且问题成功复现,剩下的就是我的找bug之路. 分析从上图可以看出flannel在访问apiserver(https:/">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20190727181502.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20190805221401.png">
 <meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20190727190818.png">
 <meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20190727192139.png">
 <meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20190727193653.png">
@@ -29,11 +29,11 @@
 <meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20190727202851.png">
 <meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20190727203550.png">
 <meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20190727203903.png">
-<meta property="og:updated_time" content="2019-07-27T13:49:24.340Z">
+<meta property="og:updated_time" content="2019-08-05T14:14:16.052Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kubernetes环境中flannel网络插件的DNS与hosts文件的优先级问题">
 <meta name="twitter:description" content="起因最近收到在中国XX银行部署kubernetes的同事的求救,他的kubernetes环境中使用了flannel网络插件,刚部署的时候一切正常一旦节点重启后网络插件就无法正常启动(状况如下图),为此他已经困扰了好几天了.  为了找出问题根因,同事在公司内部用虚拟机搭建了测试环境并且问题成功复现,剩下的就是我的找bug之路. 分析从上图可以看出flannel在访问apiserver(https:/">
-<meta name="twitter:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20190727181502.png">
+<meta name="twitter:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20190805221401.png">
   
     <link rel="alternative" href="/atom.xml" title="范丰强的博客" type="application/atom+xml">
   
@@ -198,7 +198,7 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h1 id="起因"><a href="#起因" class="headerlink" title="起因"></a>起因</h1><p>最近收到在中国XX银行部署kubernetes的同事的求救,他的kubernetes环境中使用了flannel网络插件,刚部署的时候一切正常一旦节点重启后网络插件就无法正常启动(状况如下图),为此他已经困扰了好几天了.</p>
-<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20190727181502.png" alt></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20190805221401.png" alt></p>
 <p>为了找出问题根因,同事在公司内部用虚拟机搭建了测试环境并且问题成功复现,剩下的就是我的找bug之路.</p>
 <h1 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h1><p>从上图可以看出flannel在访问apiserver(<a href="https://slb.mpaas.com)时超时.下面从这三个方面分析" target="_blank" rel="noopener">https://slb.mpaas.com)时超时.下面从这三个方面分析</a></p>
 <ul>
@@ -574,11 +574,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">gitlab</a>
+                <a href="javascript:void(0)" class="js-tag color3">jenkins</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">jenkins</a>
+                <a href="javascript:void(0)" class="js-tag color2">gitlab</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -586,11 +586,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">flannel</a>
+                <a href="javascript:void(0)" class="js-tag color5">glusterfs</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">glusterfs</a>
+                <a href="javascript:void(0)" class="js-tag color3">flannel</a>
               </li>
              
               <li class="article-tag-list-item">
