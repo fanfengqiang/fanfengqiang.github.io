@@ -163,6 +163,97 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-手动添加docker容器到指定的网桥" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/09/21/手动添加docker容器到指定的网桥/">手动添加docker容器到指定的网桥</a>
+    </h1>
+  
+
+        
+        <a href="/2019/09/21/手动添加docker容器到指定的网桥/" class="archive-article-date">
+  	<time datetime="2019-09-21T09:35:11.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-09-21</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="1-需求"><a href="#1-需求" class="headerlink" title="1. 需求"></a>1. 需求</h1><p>将docker容器加入linux内核原生支持的虚拟网桥实现dockerIP于宿主机具有相同网断</p>
+<h1 id="2-原理"><a href="#2-原理" class="headerlink" title="2. 原理"></a>2. 原理</h1><h2 id="2-1-实现原理"><a href="#2-1-实现原理" class="headerlink" title="2.1 实现原理"></a>2.1 实现原理</h2><p>创建虚拟网桥,创建步骤同安装KVM时创建的方案这里不在赘述,linux虚拟网桥相当于一个二层交换机</p>
+<p>创建虚拟网卡对,将其中一半加入虚拟网桥,另一半加入docker容器所在的命名空间</p>
+<p>激活docker容器中的哪个网卡,并为其分配ip</p>
+<h2 id="2-2-难点"><a href="#2-2-难点" class="headerlink" title="2.2 难点"></a>2.2 难点</h2><p>如何操作docker容器所在的网络命名空间:</p>
+<p>方法一:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /var/run/netns</span><br><span class="line">docker inspect 容器ID|grep SandboxKey</span><br><span class="line"><span class="comment">#             "SandboxKey": "/var/run/docker/netns/6cca981676a4",</span></span><br><span class="line">ln -sv /var/run/docker/netns/6cca981676a4 /var/run/netns/6cca981676a4</span><br><span class="line">ip netns <span class="built_in">exec</span> 6cca981676a4 ip a</span><br></pre></td></tr></table></figure>
+<p>方法二:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /var/run/netns</span><br><span class="line">docker inspect f7caddbf88fc|grep -i Pid</span><br><span class="line"><span class="comment">#             "Pid": 5132,</span></span><br><span class="line">ln -sv /proc/5132/ns/net /var/run/netns/6cca981676a4</span><br><span class="line">ip netns <span class="built_in">exec</span> 6cca981676a4 ip a</span><br></pre></td></tr></table></figure>
+<h1 id="3-实现"><a href="#3-实现" class="headerlink" title="3. 实现"></a>3. 实现</h1><p>在这里我们使用一个第三方封装的工具</p>
+<h2 id="3-1-安装依赖"><a href="#3-1-安装依赖" class="headerlink" title="3.1. 安装依赖"></a>3.1. 安装依赖</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y net-tools iproute2 bridge-utils git curl</span><br></pre></td></tr></table></figure>
+<h2 id="3-2-安装工具"><a href="#3-2-安装工具" class="headerlink" title="3.2. 安装工具"></a>3.2. 安装工具</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://raw.githubusercontent.com/jpetazzo/pipework/master/pipework -O /usr/bin/pipework</span><br><span class="line">chmod +x /usr/bin/pipework</span><br></pre></td></tr></table></figure>
+<h2 id="3-3-执行"><a href="#3-3-执行" class="headerlink" title="3.3. 执行"></a>3.3. 执行</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">pipework br0 testweb1 192.168.1.3/24@192.168.1.1</span><br><span class="line"><span class="comment"># br0是要添加到的目标网桥</span></span><br><span class="line"><span class="comment"># testweb1是容器的名字</span></span><br><span class="line"><span class="comment"># 192.168.1.3/24是为容器手动分配的IP</span></span><br><span class="line"><span class="comment"># 192.168.1.1是容器的网关</span></span><br></pre></td></tr></table></figure>
+<h2 id="3-4-参数解释"><a href="#3-4-参数解释" class="headerlink" title="3.4. 参数解释"></a>3.4. 参数解释</h2><p>参考:<a href="https://github.com/jpetazzo/pipework" target="_blank" rel="noopener">https://github.com/jpetazzo/pipework</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script> 
+
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+                    <a href="/tags/docker/" class="article-tag-list-link color2">docker</a>
+        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">docker</a> -->
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/09/21/手动添加docker容器到指定的网桥/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-设置kubeadm自签证书为100年" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1249,166 +1340,6 @@
 
 
   
-    <article id="post-kubernetes-TLS-Bootstrapping配置" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/03/11/kubernetes-TLS-Bootstrapping配置/">kubernetes TLS Bootstrapping配置</a>
-    </h1>
-  
-
-        
-        <a href="/2019/03/11/kubernetes-TLS-Bootstrapping配置/" class="archive-article-date">
-  	<time datetime="2019-03-11T09:20:07.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-11</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="序"><a href="#序" class="headerlink" title="序"></a>序</h1><p>前两天考试CKA遇到这样一道题目:添加一个node节点到集群中。这其实并不难，但由于不了解实验环境结构第一步就卡住了，结果就jj了（PS:此题8分,我最终成绩92）。对于一个具有完美主义的强迫症来说是不能接受自己的无知的，经过google和查阅文档终于搞明白了。</p>
-<p>下面是考试题目（第22题）</p>
-<p>Set configuration context $ kubectl config use-context ik8s<br>In this task, you will configure a new Node, ik8s-node-0, to join a Kubernetes cluster as follows:</p>
-<ul>
-<li>Configure kubelet for automatic certificate rotation and ensure that both server and client CSRs are automatically approved and signed as appropnate via the use of RBAC.</li>
-<li>Ensure that the appropriate cluster-info ConfigMap is created and configured appropriately in the correct namespace so that future Nodes can easily join the cluster</li>
-<li>Your bootstrap kubeconfig should be created on the new Node at /etc/kubernetes/bootstrap-kubelet.conf (do not remove this file once your Node has successfully joined the cluster)</li>
-<li>The appropriate cluster-wide CA certificate is located on the Node at /etc/kubernetes/pki/ca.crt . You should ensure that any automatically issued certificates are installed to the node at /var/lib/kubelet/pki and that the kubeconfig file for kubelet will be rendered at /etc/kubernetes/kubelet.conf upon successful bootstrapping</li>
-<li>Use an additional group for bootstrapping Nodes attempting to join the cluster which should be called system:bootstrappers:cka:default-node-token</li>
-<li>Solution should start automatically on boot, with the systemd service unit file for kubelet available at /etc/systemd/system/kubelet.service</li>
-</ul>
-<p>To test your solution, create the appropriate resources from the spec file located at /opt/…./kube-flannel.yaml This will create the necessary supporting resources as well as the kube-flannel -ds DaemonSet . You should ensure that this DaemonSet is correctly deployed to the single node in the cluster.</p>
-<p>Hints:</p>
-<ul>
-<li>kubelet is not configured or running on ik8s-master-0 for this task, and you should not attempt to configure it.</li>
-<li>You will make use of TLS bootstrapping to complete this task.</li>
-<li>You can obtain the IP address of the Kubernetes API server via the following command $ ssh ik8s-node-0 getent hosts ik8s-master-0</li>
-<li>The API server is listening on the usual port, 6443/tcp, and will only server TLS requests</li>
-<li>The kubelet binary is already installed on ik8s-node-0 at /usr/bin/kubelet . You will not need to deploy kube-proxy to the cluster during this task.</li>
-<li>You can ssh to the new worker node using $ ssh ik8s-node-0</li>
-<li>You can ssh to the master node with the following command $ ssh ik8s-master-0</li>
-<li>No further configuration of control plane services running on ik8s-master-0 is required</li>
-<li>You can assume elevated privileges on both nodes with the following command $ sudo -i</li>
-<li>Docker is already installed and running on ik8s-node-0</li>
-</ul>
-<p>Question weight: 8%</p>
-<p>题目的大意是node节点通过RBAC自动完成证书申请，master要自动同意node节点的申请CSR，剩下的全部是完成这个流程的细节要求（应该是为了跑成绩脚本的标准化）</p>
-<h1 id="TLS-bootstrap的流程"><a href="#TLS-bootstrap的流程" class="headerlink" title="TLS bootstrap的流程"></a>TLS bootstrap的流程</h1><h2 id="kubelet需要申请那些证书"><a href="#kubelet需要申请那些证书" class="headerlink" title="kubelet需要申请那些证书"></a>kubelet需要申请那些证书</h2><p>集群启用RBAC后各组件之间的通信是基于TLS加密的，client和server需要通过证书中的CN，O来确定用户的user和group，因此client和server都需要持有有效证书</p>
-<ul>
-<li>node节点的kubelet需要和master节点的apiserver通信，此时kubelet是一个client需要申请证书</li>
-<li>node节点的kubelet启动为守住进程通过10250端口暴露自己的状态，此时kubelet是一个server需要申请证书</li>
-</ul>
-<h2 id="kubelet申请证书的步骤"><a href="#kubelet申请证书的步骤" class="headerlink" title="kubelet申请证书的步骤"></a>kubelet申请证书的步骤</h2><ol>
-<li>集群产生一个低权账号用户组，并通过TOKEN进行认证</li>
-<li>创建ClusterRole使其具有创建证书申请CSR的权限</li>
-<li>给这个组添加ClusterRoleBinding，使得具有这个组的账号的kubelet具有上述权限</li>
-<li>给添加ClusterRoleBinding，使得controller-manager自动同意上述两个证书的下发</li>
-<li>调整 Controller Manager确保启动tokencleaner和bootstrapsigner（4中自动证书下发的功能）</li>
-<li>基于上述TOKEN生成bootstrap.kubeconfig文件，并下发给node节点</li>
-<li>node节点的kubelet拿着这个bootstrap.kubeconfig向master的apiserver发起CSR</li>
-<li>master自动同意并下发第一个证书</li>
-<li>node记得点的kubelet自动拿着第一个证书与master的apiserver通信申请第二个证书</li>
-<li>master自动同意并下发第二个证书</li>
-<li>node节点加入集群</li>
-</ol>
-<h1 id="踩坑记"><a href="#踩坑记" class="headerlink" title="踩坑记"></a>踩坑记</h1><p>大家可能看到了，要想完成证书申请需要TOKEN，而我就栽在了第一步。</p>
-<p>通常我们搭建的集群有两种运行方式：</p>
-<ul>
-<li>二进制部署以守住进程运行</li>
-<li>kubeadm部署以静态POD运行</li>
-</ul>
-<h2 id="第一种方式："><a href="#第一种方式：" class="headerlink" title="第一种方式："></a>第一种方式：</h2><p>部署是通常写一个token.csv文件，apiserver启动时加上参数”–token-auth-file=/etc/kubernetes/token.csv”</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">6df3c701f979cee17732c30958745947,kubelet-bootstrap,10001,&quot;system:bootstrappers&quot;</span><br></pre></td></tr></table></figure>
-<p>上述”6df3c701f979cee17732c30958745947”为TOKEN值，”system:bootstrappers”为用户组</p>
-<h2 id="第二种方式："><a href="#第二种方式：" class="headerlink" title="第二种方式："></a>第二种方式：</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建一个TOKEN，指定组为system:bootstrappers:cka:default-node-token</span></span><br><span class="line">kubeadm token create</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出所有TOKEN</span></span><br><span class="line">kubeadm token list</span><br></pre></td></tr></table></figure>
-<h2 id="坑："><a href="#坑：" class="headerlink" title="坑："></a>坑：</h2><p>既然已经知道了如何获取TOKEN那就开始吧，docker ps有内容apisever，controller-manager,scheduler都是静态POD，第一种方式行不通那就第二种，kubeadm！纳尼！！！没有kubeadm命令！</p>
-<p>此时我的内心是崩溃的第一步都进行不下去，无奈这题就栽在这里了。</p>
-<p>考后在google的帮忙下找到了第三种生成TOKEN的方法</p>
-<h2 id="第三种方式："><a href="#第三种方式：" class="headerlink" title="第三种方式："></a>第三种方式：</h2><p>可以创建类型为”bootstrap.kubernetes.io/token”的secret，<a href="https://kubernetes.io/docs/reference/access-authn-authz/bootstrap-tokens/#bootstrap-token-secret-format" target="_blank" rel="noopener">参见官方文档</a></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">"<span class="variable">$(head -c 6 /dev/urandom | md5sum | head -c 6)</span>"</span>.<span class="string">"<span class="variable">$(head -c 16 /dev/urandom | md5sum | head -c 16)</span>"</span></span><br><span class="line"><span class="comment"># d08961.c704b892a7c0a5f6</span></span><br></pre></td></tr></table></figure>
-<p>执行上述命令得到一个TOKEN值”d08961.c704b892a7c0a5f6”</p>
-<p>这个 <code>d08961.c704b892a7c0a5f6</code> 就是生成的 Bootstrap Token，保存好 token，因为后续要用；关于这个 token 解释如下:</p>
-<p>Token 必须满足 <code>[a-z0-9]{6}\.[a-z0-9]{16}</code> 格式；以 <code>.</code> 分割，前面的部分被称作 <code>Token ID</code> ， <code>Token ID</code> 并不是 “机密信息”，它可以暴露出去；相对的后面的部分称为 <code>Token Secret</code> ，它应该是保密的。</p>
-<p>下面我们将这个TOKEN做成secret：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">apiVersion: v1</span><br><span class="line">kind: Secret</span><br><span class="line">metadata:</span><br><span class="line">  <span class="comment"># Name MUST be of form "bootstrap-token-&lt;token id&gt;"</span></span><br><span class="line">  name: bootstrap-token-d08961</span><br><span class="line">  namespace: kube-system</span><br><span class="line"></span><br><span class="line"><span class="comment"># Type MUST be 'bootstrap.kubernetes.io/token'</span></span><br><span class="line"><span class="built_in">type</span>: bootstrap.kubernetes.io/token</span><br><span class="line">stringData:</span><br><span class="line">  <span class="comment"># Human readable description. Optional.</span></span><br><span class="line">  description: <span class="string">"The default bootstrap token generated by 'kubeadm init'."</span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># Token ID and secret. Required.</span></span><br><span class="line">  token-id: d08961</span><br><span class="line">  token-secret: c704b892a7c0a5f6</span><br><span class="line"></span><br><span class="line">  <span class="comment"># Expiration. Optional.</span></span><br><span class="line">  expiration: 2020-03-10T03:22:11Z</span><br><span class="line"></span><br><span class="line">  <span class="comment"># Allowed usages.</span></span><br><span class="line">  usage-bootstrap-authentication: <span class="string">"true"</span></span><br><span class="line">  usage-bootstrap-signing: <span class="string">"true"</span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># Extra groups to authenticate the token as. Must start with "system:bootstrappers:"</span></span><br><span class="line">  auth-extra-groups: system:bootstrappers:cka:default-node-token</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl create  -n kube-system -f bootstrap-secret.yaml</span><br><span class="line">kubectl get secrets -n kube-system</span><br></pre></td></tr></table></figure>
-<h1 id="完整答案"><a href="#完整答案" class="headerlink" title="完整答案"></a>完整答案</h1><p>剩下的就是接住上面部分按要求做完</p>
-<h2 id="创建ClusterRole"><a href="#创建ClusterRole" class="headerlink" title="创建ClusterRole"></a>创建ClusterRole</h2><p><a href="https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/#kube-controller-manager-configuration" target="_blank" rel="noopener">参见官方文档</a></p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># A ClusterRole which instructs the CSR approver to approve a user requesting</span></span><br><span class="line"><span class="comment"># node client credentials.</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ClusterRole</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">rbac.authorization.k8s.io/v1</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="attr">system:certificates.k8s.io:certificatesigningrequests:nodeclient</span></span><br><span class="line"><span class="attr">rules:</span></span><br><span class="line"><span class="attr">- apiGroups:</span> <span class="string">["certificates.k8s.io"]</span></span><br><span class="line"><span class="attr">  resources:</span> <span class="string">["certificatesigningrequests/nodeclient"]</span></span><br><span class="line"><span class="attr">  verbs:</span> <span class="string">["create"]</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="comment"># A ClusterRole which instructs the CSR approver to approve a node renewing its</span></span><br><span class="line"><span class="comment"># own client credentials.</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ClusterRole</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">rbac.authorization.k8s.io/v1</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="attr">system:certificates.k8s.io:certificatesigningrequests:selfnodeclient</span></span><br><span class="line"><span class="attr">rules:</span></span><br><span class="line"><span class="attr">- apiGroups:</span> <span class="string">["certificates.k8s.io"]</span></span><br><span class="line"><span class="attr">  resources:</span> <span class="string">["certificatesigningrequests/selfnodeclient"]</span></span><br><span class="line"><span class="attr">  verbs:</span> <span class="string">["create"]</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ClusterRole</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">rbac.authorization.k8s.io/v1</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="attr">system:node-bootstrapper</span></span><br><span class="line"><span class="attr">rules:</span></span><br><span class="line"><span class="attr">- apiGroups:</span></span><br><span class="line"><span class="bullet">  -</span> <span class="string">certificates.k8s.io</span></span><br><span class="line"><span class="attr">  resources:</span></span><br><span class="line"><span class="bullet">  -</span> <span class="string">certificatesigningrequests</span></span><br><span class="line"><span class="attr">  verbs:</span></span><br><span class="line"><span class="bullet">  -</span> <span class="string">create</span></span><br><span class="line"><span class="bullet">  -</span> <span class="string">get</span></span><br><span class="line"><span class="bullet">  -</span> <span class="string">list</span></span><br><span class="line"><span class="bullet">  -</span> <span class="string">watch</span></span><br></pre></td></tr></table></figure>
-<p>有些role系统已经内置了，如果提示报错直接忽略就行了</p>
-<h2 id="创建ClusterRoleBinding"><a href="#创建ClusterRoleBinding" class="headerlink" title="创建ClusterRoleBinding"></a>创建ClusterRoleBinding</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">rbac.authorization.k8s.io/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ClusterRoleBinding</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="attr">cka:kubelet-bootstrap</span></span><br><span class="line"><span class="attr">roleRef:</span></span><br><span class="line"><span class="attr">  apiGroup:</span> <span class="string">rbac.authorization.k8s.io</span></span><br><span class="line"><span class="attr">  kind:</span> <span class="string">ClusterRole</span></span><br><span class="line"><span class="attr">  name:</span> <span class="attr">system:node-bootstrapper</span></span><br><span class="line"><span class="attr">subjects:</span></span><br><span class="line"><span class="attr">- apiGroup:</span> <span class="string">rbac.authorization.k8s.io</span></span><br><span class="line"><span class="attr">  kind:</span> <span class="string">Group</span></span><br><span class="line"><span class="attr">  name:</span> <span class="attr">system:bootstrappers:cka:default-node-token</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">rbac.authorization.k8s.io/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ClusterRoleBinding</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="attr">cka:node-autoapprove-bootstrap</span></span><br><span class="line"><span class="attr">roleRef:</span></span><br><span class="line"><span class="attr">  apiGroup:</span> <span class="string">rbac.authorization.k8s.io</span></span><br><span class="line"><span class="attr">  kind:</span> <span class="string">ClusterRole</span></span><br><span class="line"><span class="attr">  name:</span> <span class="attr">system:certificates.k8s.io:certificatesigningrequests:nodeclient</span></span><br><span class="line"><span class="attr">subjects:</span></span><br><span class="line"><span class="attr">- apiGroup:</span> <span class="string">rbac.authorization.k8s.io</span></span><br><span class="line"><span class="attr">  kind:</span> <span class="string">Group</span></span><br><span class="line"><span class="attr">  name:</span> <span class="attr">system:bootstrappers:cka:default-node-token</span></span><br></pre></td></tr></table></figure>
-<h2 id="调整-Controller-Manage"><a href="#调整-Controller-Manage" class="headerlink" title="调整 Controller Manage"></a>调整 Controller Manage</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/kubernetes/manifests/kube-controller-manager.yaml</span><br><span class="line"><span class="comment"># 确保配置文件中有这行"--controllers=*,bootstrapsigner,tokencleaner"</span></span><br></pre></td></tr></table></figure>
-<h2 id="生成bootstrap-kubeconfig文件"><a href="#生成bootstrap-kubeconfig文件" class="headerlink" title="生成bootstrap.kubeconfig文件"></a>生成bootstrap.kubeconfig文件</h2><p>我这里的apiserver的地址为”<a href="https://192.168.65.26:6443&quot;" target="_blank" rel="noopener">https://192.168.65.26:6443&quot;</a></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 设置集群参数</span></span><br><span class="line">kubectl config <span class="built_in">set</span>-cluster cka \</span><br><span class="line">  --certificate-authority=/etc/kubernetes/pki/ca.crt \</span><br><span class="line">  --embed-certs=<span class="literal">true</span> \</span><br><span class="line">  --server=https://192.168.65.26:6443 \</span><br><span class="line">  --kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf</span><br><span class="line"><span class="comment"># 设置客户端认证参数</span></span><br><span class="line">kubectl config <span class="built_in">set</span>-credentials system:bootstrap:d08961 \</span><br><span class="line">  --token=d08961.c704b892a7c0a5f6 \</span><br><span class="line">  --kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf</span><br><span class="line"><span class="comment"># 设置上下文参数</span></span><br><span class="line">kubectl config <span class="built_in">set</span>-context default \</span><br><span class="line">  --cluster=cka \</span><br><span class="line">  --user=system:bootstrap:d08961 \</span><br><span class="line">  --kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf</span><br><span class="line"><span class="comment"># 设置默认上下文</span></span><br><span class="line">kubectl config use-context default --kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf</span><br></pre></td></tr></table></figure>
-<p>将其拷贝到node节点</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scp /etc/kubernetes/bootstrap-kubelet.conf node3:/etc/kubernetes/bootstrap-kubelet.conf</span><br></pre></td></tr></table></figure>
-<h2 id="配置node节点的kubelet"><a href="#配置node节点的kubelet" class="headerlink" title="配置node节点的kubelet"></a>配置node节点的kubelet</h2><p>编辑kubelet.config</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/kubernetes/kubelet.config</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">kind: KubeletConfiguration</span><br><span class="line">apiVersion: kubelet.config.k8s.io/v1beta1</span><br><span class="line">address: 192.168.65.28</span><br><span class="line">port: 10250</span><br><span class="line">readOnlyPort: 10255</span><br><span class="line">cgroupDriver: cgroupfs</span><br><span class="line">clusterDNS: [<span class="string">"10.96.0.10"</span>]</span><br><span class="line">clusterDomain: cluster.local.</span><br><span class="line">failSwapOn: <span class="literal">false</span></span><br><span class="line">authentication:</span><br><span class="line">  anonymous:</span><br><span class="line">    enabled: <span class="literal">true</span></span><br></pre></td></tr></table></figure>
-<p>编辑kubelet.service </p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/systemd/system/kubelet.service</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Kubernetes Kubelet</span><br><span class="line">After=docker.service</span><br><span class="line">Requires=docker.service</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">#EnvironmentFile=/k8s/kubernetes/cfg/kubelet</span><br><span class="line">ExecStart=/usr/bin/kubelet \</span><br><span class="line">--logtostderr=true \</span><br><span class="line">--v=4 \</span><br><span class="line">--hostname-override=192.168.65.28 \</span><br><span class="line">--kubeconfig=/etc/kubernetes/kubelet.kubeconfig \</span><br><span class="line">--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf \</span><br><span class="line">--config=/etc/kubernetes/kubelet.config \</span><br><span class="line">--cert-dir=/etc/kubernetes/pki \</span><br><span class="line">--pod-infra-container-image=k8s.gcr.io/pause:3.1</span><br><span class="line">Restart=on-failure</span><br><span class="line">KillMode=process</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">systemctl daemon-reload </span><br><span class="line">systemctl restart kubelet.service</span><br><span class="line">systemctl status kubelet.service</span><br></pre></td></tr></table></figure>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script> 
-
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2019/03/11/kubernetes-TLS-Bootstrapping配置/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
@@ -1560,6 +1491,10 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">kubernets</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">flannel</a>
               </li>
              
@@ -1568,7 +1503,7 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">kubernets</a>
+                <a href="javascript:void(0)" class="js-tag color2">docker</a>
               </li>
              
               <li class="article-tag-list-item">
