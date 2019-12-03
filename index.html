@@ -196,18 +196,18 @@
 <p>现在我们把<strong>/var/run/docker/netns/</strong>中描述文件软连接到<strong>/var/run/netns/</strong>下</p>
 <p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20191203135703.png" alt></p>
 <p>现在如何知道这个网络名称空间是那个容器的呢?</p>
-<p><img src="/Users/ffq/Library/Application Support/typora-user-images/image-20191203135851691.png" alt="image-20191203135851691"></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/image-20191203135851691.png" alt></p>
 <p>剩下的就可以使用<strong>ip netns</strong>命令随便折腾了!</p>
 <h2 id="所有名称空间"><a href="#所有名称空间" class="headerlink" title="所有名称空间"></a>所有名称空间</h2><p>上面的命令可以方便的对网络名称空间进行操作,但是我想进入其它命名空间怎么办呢?</p>
 <p>我们可以使用<strong>lsns</strong>命令</p>
-<p><img src="/Users/ffq/Library/Application Support/typora-user-images/image-20191203140350898.png" alt="image-20191203140350898"></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/image-20191203140350898.png" alt></p>
 <h2 id="查看进程所在名称空间"><a href="#查看进程所在名称空间" class="headerlink" title="查看进程所在名称空间"></a>查看进程所在名称空间</h2><p>我们先获取docker容器的进程pid</p>
-<p><img src="/Users/ffq/Library/Application Support/typora-user-images/image-20191203140503491.png" alt="image-20191203140503491"></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/image-20191203140503491.png" alt></p>
 <p>关于这个进程所在namespace可以在这个路径进程查看</p>
-<p><img src="/Users/ffq/Library/Application Support/typora-user-images/image-20191203140654229.png" alt="image-20191203140654229"></p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/image-20191203140654229.png" alt></p>
 <h1 id="进入"><a href="#进入" class="headerlink" title="进入"></a>进入</h1><p>哪我们怎么才可以进入上述所说的命名空间呢?</p>
 <p>下面是<strong>nscenter</strong>大显身手的时候了!</p>
-<h2 id="通过PID进程号"><a href="#通过PID进程号" class="headerlink" title="通过PID进程号"></a>通过PID进程号</h2><p><img src="/Users/ffq/Library/Application Support/typora-user-images/image-20191203141858055.png" alt="image-20191203141858055"></p>
+<h2 id="通过PID进程号"><a href="#通过PID进程号" class="headerlink" title="通过PID进程号"></a>通过PID进程号</h2><p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/image-20191203141858055.png" alt></p>
 <h2 id="通过描述符"><a href="#通过描述符" class="headerlink" title="通过描述符"></a>通过描述符</h2><p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20191203142237.png" alt></p>
 <p>注意:必须加<strong>sudo</strong>执行,参数细节请自行查看man手册</p>
 
@@ -1453,10 +1453,6 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">gitlab</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">elasticsearch</a>
               </li>
              
@@ -1466,6 +1462,10 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">git</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">gitlab</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1481,7 +1481,7 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">openldap</a>
+                <a href="javascript:void(0)" class="js-tag color5">kubernets</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1489,7 +1489,7 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">kubernets</a>
+                <a href="javascript:void(0)" class="js-tag color4">openldap</a>
               </li>
              
               <li class="article-tag-list-item">

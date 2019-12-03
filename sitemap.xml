@@ -4,7 +4,7 @@
   <url>
     <loc>https://blog.fanfengqiang.com/2019/12/03/%E4%BD%BF%E7%94%A8%E7%B3%BB%E7%BB%9F%E5%91%BD%E4%BB%A4%E8%BF%9B%E5%85%A5docker%E5%AE%B9%E5%99%A8%E7%9A%84%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4/</loc>
     
-    <lastmod>2019-12-03T06:24:15.216Z</lastmod>
+    <lastmod>2019-12-03T06:33:20.123Z</lastmod>
     
   </url>
   
@@ -86,7 +86,7 @@
   </url>
   
   <url>
-    <loc>https://blog.fanfengqiang.com/2018/08/27/elasticsearch%E5%AE%9E%E7%8E%B0ldap%E7%94%A8%E6%88%B7%E5%AF%B9%E6%8E%A5/</loc>
+    <loc>https://blog.fanfengqiang.com/2019/01/26/kubernetes-HA-master%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
     
@@ -100,14 +100,21 @@
   </url>
   
   <url>
-    <loc>https://blog.fanfengqiang.com/2018/08/23/gitlab%E5%AE%89%E8%A3%85%E3%80%81%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D/</loc>
+    <loc>https://blog.fanfengqiang.com/2019/01/25/kubernetes%E7%AE%80%E5%8D%95%E5%AE%89%E8%A3%85/</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://blog.fanfengqiang.com/2018/12/26/glusterfs%E4%BD%9C%E4%B8%BAkubernetes%E5%90%8E%E7%AB%AFstorageclass/</loc>
+    <loc>https://blog.fanfengqiang.com/2018/08/27/elasticsearch%E5%AE%9E%E7%8E%B0ldap%E7%94%A8%E6%88%B7%E5%AF%B9%E6%8E%A5/</loc>
+    
+    <lastmod>2019-05-03T16:12:08.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://blog.fanfengqiang.com/2018/08/23/gitlab%E5%AE%89%E8%A3%85%E3%80%81%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D/</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
     
@@ -128,21 +135,7 @@
   </url>
   
   <url>
-    <loc>https://blog.fanfengqiang.com/2019/01/25/kubernetes%E7%AE%80%E5%8D%95%E5%AE%89%E8%A3%85/</loc>
-    
-    <lastmod>2019-05-03T16:12:08.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://blog.fanfengqiang.com/2019/01/26/kubernetes-HA-master%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/</loc>
-    
-    <lastmod>2019-05-03T16:12:08.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://blog.fanfengqiang.com/archives/index.html</loc>
+    <loc>https://blog.fanfengqiang.com/2018/12/26/glusterfs%E4%BD%9C%E4%B8%BAkubernetes%E5%90%8E%E7%AB%AFstorageclass/</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
     
@@ -150,6 +143,13 @@
   
   <url>
     <loc>https://blog.fanfengqiang.com/about/index.html</loc>
+    
+    <lastmod>2019-05-03T16:12:08.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://blog.fanfengqiang.com/archives/index.html</loc>
     
     <lastmod>2019-05-03T16:12:08.000Z</lastmod>
     
