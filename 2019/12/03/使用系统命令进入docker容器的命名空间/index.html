@@ -6,18 +6,31 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="https://blog.fanfengqiang.com">
-  <title>Tag: kubernetes | 范丰强的博客</title>
+  <title>使用系统命令进入docker容器的命名空间 | 范丰强的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="blog">
-<meta property="og:type" content="website">
-<meta property="og:title" content="范丰强的博客">
-<meta property="og:url" content="https://blog.fanfengqiang.com/tags/kubernetes/index.html">
+  <meta name="description" content="前言我们都知道docker容器化技术使用了内核提供的namespace技术做资源的隔离,cgroup技术做资源的限制,但一直有一个疑惑我们docker的底层是怎么实现的,我们能不能进入docker创建的namespace. 经过一段时间的研究小有收获,此篇博客主要讲namespace,下篇讲cgroup. 查看网络名称空间ip命令给我们提供了操作网络名称空间空间的能力,我们可以使用ip netns">
+<meta name="keywords" content="docker">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用系统命令进入docker容器的命名空间">
+<meta property="og:url" content="https://blog.fanfengqiang.com/2019/12/03/使用系统命令进入docker容器的命名空间/index.html">
 <meta property="og:site_name" content="范丰强的博客">
-<meta property="og:description" content="blog">
+<meta property="og:description" content="前言我们都知道docker容器化技术使用了内核提供的namespace技术做资源的隔离,cgroup技术做资源的限制,但一直有一个疑惑我们docker的底层是怎么实现的,我们能不能进入docker创建的namespace. 经过一段时间的研究小有收获,此篇博客主要讲namespace,下篇讲cgroup. 查看网络名称空间ip命令给我们提供了操作网络名称空间空间的能力,我们可以使用ip netns">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20191203114728.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20191203114906.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20191203134534.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20191203135703.png">
+<meta property="og:image" content="https://blog.fanfengqiang.com/Users/ffq/Library/Application%20Support/typora-user-images/image-20191203135851691.png">
+<meta property="og:image" content="https://blog.fanfengqiang.com/Users/ffq/Library/Application%20Support/typora-user-images/image-20191203140350898.png">
+<meta property="og:image" content="https://blog.fanfengqiang.com/Users/ffq/Library/Application%20Support/typora-user-images/image-20191203140503491.png">
+<meta property="og:image" content="https://blog.fanfengqiang.com/Users/ffq/Library/Application%20Support/typora-user-images/image-20191203140654229.png">
+<meta property="og:image" content="https://blog.fanfengqiang.com/Users/ffq/Library/Application%20Support/typora-user-images/image-20191203141858055.png">
+<meta property="og:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20191203142237.png">
+<meta property="og:updated_time" content="2019-12-03T06:24:15.216Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="范丰强的博客">
-<meta name="twitter:description" content="blog">
+<meta name="twitter:title" content="使用系统命令进入docker容器的命名空间">
+<meta name="twitter:description" content="前言我们都知道docker容器化技术使用了内核提供的namespace技术做资源的隔离,cgroup技术做资源的限制,但一直有一个疑惑我们docker的底层是怎么实现的,我们能不能进入docker创建的namespace. 经过一段时间的研究小有收获,此篇博客主要讲namespace,下篇讲cgroup. 查看网络名称空间ip命令给我们提供了操作网络名称空间空间的能力,我们可以使用ip netns">
+<meta name="twitter:image" content="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20191203114728.png">
   
     <link rel="alternative" href="/atom.xml" title="范丰强的博客" type="application/atom+xml">
   
@@ -161,433 +174,231 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-使用系统命令进入docker容器的命名空间" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      使用系统命令进入docker容器的命名空间
+    </h1>
+  
+
+        
+        <a href="/2019/12/03/使用系统命令进入docker容器的命名空间/" class="archive-article-date">
+  	<time datetime="2019-12-03T06:23:39.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-12-03</time>
+</a>
+        
+      </header>
     
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>我们都知道docker容器化技术使用了内核提供的namespace技术做资源的隔离,cgroup技术做资源的限制,但一直有一个疑惑我们docker的底层是怎么实现的,我们能不能进入docker创建的namespace.</p>
+<p>经过一段时间的研究小有收获,此篇博客主要讲namespace,下篇讲cgroup.</p>
+<h1 id="查看"><a href="#查看" class="headerlink" title="查看"></a>查看</h1><h2 id="网络名称空间"><a href="#网络名称空间" class="headerlink" title="网络名称空间"></a>网络名称空间</h2><p>ip命令给我们提供了操作网络名称空间空间的能力,我们可以使用<strong>ip netns</strong>查看、创建、操作、进入网络名称空间</p>
+<p>但ip命令并不能直接进入docker创建的网络名称空间这是为什么?</p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20191203114728.png" alt></p>
+<p>下面我们做个实验</p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20191203114906.png" alt></p>
+<p>我们可以看见ip netns命令创建网络名称空间后在/var/run/netns/目录下下创建了一个文件</p>
+<p>而docker创建网络名称空间的时候把描述文件放在了这里</p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20191203134534.png" alt></p>
+<p>现在我们把<strong>/var/run/docker/netns/</strong>中描述文件软连接到<strong>/var/run/netns/</strong>下</p>
+<p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20191203135703.png" alt></p>
+<p>现在如何知道这个网络名称空间是那个容器的呢?</p>
+<p><img src="/Users/ffq/Library/Application Support/typora-user-images/image-20191203135851691.png" alt="image-20191203135851691"></p>
+<p>剩下的就可以使用<strong>ip netns</strong>命令随便折腾了!</p>
+<h2 id="所有名称空间"><a href="#所有名称空间" class="headerlink" title="所有名称空间"></a>所有名称空间</h2><p>上面的命令可以方便的对网络名称空间进行操作,但是我想进入其它命名空间怎么办呢?</p>
+<p>我们可以使用<strong>lsns</strong>命令</p>
+<p><img src="/Users/ffq/Library/Application Support/typora-user-images/image-20191203140350898.png" alt="image-20191203140350898"></p>
+<h2 id="查看进程所在名称空间"><a href="#查看进程所在名称空间" class="headerlink" title="查看进程所在名称空间"></a>查看进程所在名称空间</h2><p>我们先获取docker容器的进程pid</p>
+<p><img src="/Users/ffq/Library/Application Support/typora-user-images/image-20191203140503491.png" alt="image-20191203140503491"></p>
+<p>关于这个进程所在namespace可以在这个路径进程查看</p>
+<p><img src="/Users/ffq/Library/Application Support/typora-user-images/image-20191203140654229.png" alt="image-20191203140654229"></p>
+<h1 id="进入"><a href="#进入" class="headerlink" title="进入"></a>进入</h1><p>哪我们怎么才可以进入上述所说的命名空间呢?</p>
+<p>下面是<strong>nscenter</strong>大显身手的时候了!</p>
+<h2 id="通过PID进程号"><a href="#通过PID进程号" class="headerlink" title="通过PID进程号"></a>通过PID进程号</h2><p><img src="/Users/ffq/Library/Application Support/typora-user-images/image-20191203141858055.png" alt="image-20191203141858055"></p>
+<h2 id="通过描述符"><a href="#通过描述符" class="headerlink" title="通过描述符"></a>通过描述符</h2><p><img src="https://blog-img-ffq.oss-cn-beijing.aliyuncs.com/20191203142237.png" alt></p>
+<p>注意:必须加<strong>sudo</strong>执行,参数细节请自行查看man手册</p>
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script> 
+
+  <span id="busuanzi_container_page_pv">
+    ⋉(●本文总阅读量 <span id="busuanzi_value_page_pv"></span> 次●)⋊
+  </span>
+
       
       
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2019" class="archive-year">2019</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/09/11/设置kubeadm自签证书为100年/" class="archive-article-date">
-  	<time datetime="2019-09-11T03:08:50.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-09-11</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/09/11/设置kubeadm自签证书为100年/">设置kubeadm自签证书为100年</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/kubeadm/" class="article-tag-list-link color3">kubeadm</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">kubeadm</a> -->
+                    <a href="/tags/docker/" class="article-tag-list-link color2">docker</a>
+        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">docker</a> -->
         		</li>
       		
 		</ul>
 	</div>
 
 
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/07/27/kubernetes环境中flannel网络插件的DNS与hosts文件的优先级问题/" class="archive-article-date">
-  	<time datetime="2019-07-27T13:41:52.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-07-27</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/07/27/kubernetes环境中flannel网络插件的DNS与hosts文件的优先级问题/">kubernetes环境中flannel网络插件的DNS与hosts文件的优先级问题</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/flannel/" class="article-tag-list-link color3">flannel</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">flannel</a> -->
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/05/04/在kubernetes中部署Jenkins-CICD工具并设置动态创建Jenkins-slave/" class="archive-article-date">
-  	<time datetime="2019-05-04T10:56:11.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-05-04</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/05/04/在kubernetes中部署Jenkins-CICD工具并设置动态创建Jenkins-slave/">在kubernetes中部署Jenkins CICD工具并设置动态创建Jenkins slave</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/jenkins/" class="article-tag-list-link color3">jenkins</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">jenkins</a> -->
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/04/27/使用traefik作为kubernetes-ingress-controller并开启letsencrypt证书认证/" class="archive-article-date">
-  	<time datetime="2019-04-27T12:13:13.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-27</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/04/27/使用traefik作为kubernetes-ingress-controller并开启letsencrypt证书认证/">使用traefik作为kubernetes ingress controller并开启letsencrypt证书认证</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/traefik/" class="article-tag-list-link color3">traefik</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">traefik</a> -->
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/ingress-controller/" class="article-tag-list-link color4">ingress controller</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">ingress controller</a> -->
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/04/01/自己动手扩展K8S功能————为自定义资源CRD写一个控制器/" class="archive-article-date">
-  	<time datetime="2019-04-01T10:13:23.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-01</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/04/01/自己动手扩展K8S功能————为自定义资源CRD写一个控制器/">自己动手扩展K8S功能————为自定义资源CRD写一个控制器</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/03/17/源码编译kubernetes-dashboard/" class="archive-article-date">
-  	<time datetime="2019-03-17T03:19:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-17</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/03/17/源码编译kubernetes-dashboard/">源码编译kubernetes dashboard</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/03/11/kubernetes-TLS-Bootstrapping配置/" class="archive-article-date">
-  	<time datetime="2019-03-11T09:20:07.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-11</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/03/11/kubernetes-TLS-Bootstrapping配置/">kubernetes TLS Bootstrapping配置</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/01/26/kubernetes-HA-master集群搭建/" class="archive-article-date">
-  	<time datetime="2019-01-26T07:03:05.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-01-26</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/01/26/kubernetes-HA-master集群搭建/">kubernetes HA master集群搭建</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
       
-        </div></section>
+
       
+
       
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2018" class="archive-year">2018</a>
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2018/12/26/glusterfs作为kubernetes后端storageclass/" class="archive-article-date">
-  	<time datetime="2018-12-26T05:52:37.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-12-26</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/12/26/glusterfs作为kubernetes后端storageclass/">glusterfs作为kubernetes后端storageclass</a>
-    </h1>
-  
+      </div>
+    </span>
+  </div>
+</div>
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-                    <a href="/tags/glusterfs/" class="article-tag-list-link color5">glusterfs</a>
-        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">glusterfs</a> -->
-        		</li>
-      		
-		</ul>
-	</div>
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=https://blog.fanfengqiang.com/2019/12/03/使用系统命令进入docker容器的命名空间/" alt="微信分享二维码">
+    </div>
+</div>
 
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
   
   
-    </div></section>
+    <a href="/2019/09/21/手动添加docker容器到指定的网桥/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">手动添加docker容器到指定的网桥</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#查看"><span class="toc-number">2.</span> <span class="toc-text">查看</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#网络名称空间"><span class="toc-number">2.1.</span> <span class="toc-text">网络名称空间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#所有名称空间"><span class="toc-number">2.2.</span> <span class="toc-text">所有名称空间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看进程所在名称空间"><span class="toc-number">2.3.</span> <span class="toc-text">查看进程所在名称空间</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#进入"><span class="toc-number">3.</span> <span class="toc-text">进入</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#通过PID进程号"><span class="toc-number">3.1.</span> <span class="toc-text">通过PID进程号</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#通过描述符"><span class="toc-number">3.2.</span> <span class="toc-text">通过描述符</span></a></li></ol></li></ol>
+                    </div>
+                </span>
+            </div>
+        </div>
+        
+    </div>
+</aside>
+
+
+
+  
+  
   
 
-    
+  
+
+  
+
+  
+  <div id="gitment-ctn"></div> 
+<link rel="stylesheet" href="https://jjeejj.github.io/css/gitment.css">
+<script src="https://jjeejj.github.io/js/gitment.js"></script>
+<script>
+var gitment = new Gitment({
+  id: "Tue Dec 03 2019 14:23:39 GMT+0800",
+  owner: 'fanfengqiang',
+  repo: 'fanfengqiang.github.io',
+  oauth: {
+    client_id: '92cb9c55315cd2f56161',
+    client_secret: 'ff3a25c4c99963216f4bbf4004c17b8383f65621',
+  },
+})
+gitment.render('gitment-ctn')
+</script>
+
+  
 
 
           </div>
@@ -615,9 +426,9 @@
 	var yiliaConfig = {
 		mathjax: true,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
-		isTag: true,
+		isTag: false,
 		isCategory: false,
 		open_in_new: false,
 		toc_hide_index: true,
