@@ -9,13 +9,14 @@
   <title>二进制部署k8s-HA集群.md | 范丰强的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="1. 配置基础环境1.0. 配置要求centos7操作系统且已安装epel源    主机 角色 组件 IP VIP     Node1 Master,node etcd,api-server,controller-manager,scheduler,kubelet,kube-proxy,haproxy,keepalive 192.168.66.41 192.168.66.40   Node2 Ma">
+<meta name="keywords" content="kubernetes">
 <meta property="og:type" content="article">
 <meta property="og:title" content="二进制部署k8s-HA集群.md">
 <meta property="og:url" content="https://blog.fanfengqiang.com/2019/07/10/二进制部署k8s-HA集群-md/index.html">
 <meta property="og:site_name" content="范丰强的博客">
 <meta property="og:description" content="1. 配置基础环境1.0. 配置要求centos7操作系统且已安装epel源    主机 角色 组件 IP VIP     Node1 Master,node etcd,api-server,controller-manager,scheduler,kubelet,kube-proxy,haproxy,keepalive 192.168.66.41 192.168.66.40   Node2 Ma">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-07-16T06:57:01.064Z">
+<meta property="og:updated_time" content="2019-12-03T06:37:30.709Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="二进制部署k8s-HA集群.md">
 <meta name="twitter:description" content="1. 配置基础环境1.0. 配置要求centos7操作系统且已安装epel源    主机 角色 组件 IP VIP     Node1 Master,node etcd,api-server,controller-manager,scheduler,kubelet,kube-proxy,haproxy,keepalive 192.168.66.41 192.168.66.40   Node2 Ma">
@@ -303,6 +304,18 @@
 
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
+        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
+        		</li>
+      		
+		</ul>
+	</div>
+
 
       
 
@@ -593,7 +606,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">flannel</a>
+                <a href="javascript:void(0)" class="js-tag color3">traefik</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">ingress controller</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -605,11 +622,7 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">traefik</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">ingress controller</a>
+                <a href="javascript:void(0)" class="js-tag color3">flannel</a>
               </li>
              
               <li class="article-tag-list-item">

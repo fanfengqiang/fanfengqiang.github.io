@@ -9,13 +9,14 @@
   <title>使用operator-sdk构建kubernetesCRD控制器实现自动申请TLS证书 | 范丰强的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="cert-operator项目由来早些时候写过一个kubernetes自定义资源CRD的controller,主要是声明一个证书需求,由控制器自动申请一个证书,并保存为一个secret,项目路径cert-controller 本项目与上述项目功能一致,只不过是用了一个框架对其做了重构.    项目 cert-controller cert-operator     框架 sample-apiser">
+<meta name="keywords" content="kubernetes">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用operator-sdk构建kubernetesCRD控制器实现自动申请TLS证书">
 <meta property="og:url" content="https://blog.fanfengqiang.com/2019/07/12/使用operator-sdk构建kubernetesCRD控制器实现自动申请TLS证书/index.html">
 <meta property="og:site_name" content="范丰强的博客">
 <meta property="og:description" content="cert-operator项目由来早些时候写过一个kubernetes自定义资源CRD的controller,主要是声明一个证书需求,由控制器自动申请一个证书,并保存为一个secret,项目路径cert-controller 本项目与上述项目功能一致,只不过是用了一个框架对其做了重构.    项目 cert-controller cert-operator     框架 sample-apiser">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-07-12T03:17:45.193Z">
+<meta property="og:updated_time" content="2019-12-03T06:36:57.980Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用operator-sdk构建kubernetesCRD控制器实现自动申请TLS证书">
 <meta name="twitter:description" content="cert-operator项目由来早些时候写过一个kubernetes自定义资源CRD的controller,主要是声明一个证书需求,由控制器自动申请一个证书,并保存为一个secret,项目路径cert-controller 本项目与上述项目功能一致,只不过是用了一个框架对其做了重构.    项目 cert-controller cert-operator     框架 sample-apiser">
@@ -303,6 +304,18 @@
 
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+                    <a href="/tags/kubernetes/" class="article-tag-list-link color1">kubernetes</a>
+        		<!--	<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">kubernetes</a> -->
+        		</li>
+      		
+		</ul>
+	</div>
+
 
       
 
@@ -593,7 +606,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">flannel</a>
+                <a href="javascript:void(0)" class="js-tag color3">traefik</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">ingress controller</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -605,11 +622,7 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">traefik</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">ingress controller</a>
+                <a href="javascript:void(0)" class="js-tag color3">flannel</a>
               </li>
              
               <li class="article-tag-list-item">
